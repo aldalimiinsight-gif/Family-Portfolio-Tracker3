@@ -79,9 +79,9 @@ export default function Business() {
           { label: 'Unrealized P&L', value: fmtCurrency(totals.pnl, 'USD', true), color: pnlColor(totals.pnl) },
           { label: 'Total Return', value: fmtPct(totals.pnlPct, 1), color: pnlColor(totals.pnlPct) },
         ].map((item) => (
-          <div key={item.label} className="bg-slate-800 rounded-xl p-4 border border-slate-700/50">
-            <p className="text-slate-400 text-xs uppercase tracking-wider">{item.label}</p>
-            <p className={`font-bold text-xl mt-1 num ${item.color}`}>{item.value}</p>
+          <div key={item.label} className="card p-4">
+            <p className="section-label mb-1.5">{item.label}</p>
+            <p className={`font-bold text-xl num ${item.color}`}>{item.value}</p>
           </div>
         ))}
       </div>
@@ -91,7 +91,8 @@ export default function Business() {
         <h2 className="text-white font-semibold">Private Business Investments</h2>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+          style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}
         >
           <Plus className="w-4 h-4" />
           Add Business
@@ -116,7 +117,7 @@ export default function Business() {
             const { pnl, pct, currentValue } = calcBusinessPnL(b);
             const impliedValue = b.currentValuation || 0;
             return (
-              <div key={b.id} className="bg-slate-800 rounded-xl p-5 border border-slate-700/50 card-hover">
+              <div key={b.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -137,22 +138,22 @@ export default function Business() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-700/40 rounded-lg p-3">
+                  <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <p className="text-slate-400 text-xs">Capital Invested</p>
                     <p className="text-white font-bold num">{fmtCurrency(b.capitalInvested, b.currency, true)}</p>
                   </div>
-                  <div className="bg-slate-700/40 rounded-lg p-3">
+                  <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <p className="text-slate-400 text-xs">Ownership Stake</p>
                     <p className="text-blue-400 font-bold">{b.ownershipPercent}%</p>
                   </div>
-                  <div className="bg-slate-700/40 rounded-lg p-3">
+                  <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <p className="text-slate-400 text-xs">Current Value (share)</p>
                     <p className="text-white font-bold num">{fmtCurrency(currentValue, b.currency, true)}</p>
                     {impliedValue > 0 && (
                       <p className="text-slate-500 text-xs">Valuation: {fmtCurrency(impliedValue, b.currency, true)}</p>
                     )}
                   </div>
-                  <div className="bg-slate-700/40 rounded-lg p-3">
+                  <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <p className="text-slate-400 text-xs">Unrealized Return</p>
                     <p className={`font-bold num ${pnlColor(pnl)}`}>{fmtCurrency(pnl, b.currency, true)}</p>
                     <span className={`text-xs px-1.5 py-0.5 rounded ${pnlBg(pct)}`}>

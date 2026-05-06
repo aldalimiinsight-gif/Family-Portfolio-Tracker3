@@ -109,9 +109,10 @@ export default function Upload() {
             {...getRootProps()}
             className={[
               'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all',
+          'border-slate-700/60',
               isDragActive
-                ? 'border-blue-500 bg-blue-500/10'
-                : 'border-slate-600 hover:border-slate-500 bg-slate-800/50',
+                ? 'border-indigo-500 bg-indigo-500/10'
+                : 'hover:border-indigo-500/40',
             ].join(' ')}
           >
             <input {...getInputProps()} />
@@ -130,7 +131,8 @@ export default function Upload() {
           {/* Template download */}
           <button
             onClick={generateTemplate}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-800 text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 text-sm transition-colors"
+            style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}
           >
             <Download className="w-4 h-4" />
             Download Template (.xlsx)
@@ -138,8 +140,8 @@ export default function Upload() {
         </div>
 
         {/* Preview panel */}
-        <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+        <div className="card overflow-hidden">
+          <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <h3 className="text-white font-semibold text-sm">File Preview</h3>
             {file && (
               <button onClick={clearFile} className="p-1 text-slate-500 hover:text-white">
@@ -230,15 +232,15 @@ export default function Upload() {
 
       {/* Upload history */}
       {monthlyUploads.length > 0 && (
-        <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-700">
+        <div className="card overflow-hidden">
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <h3 className="text-white font-semibold text-sm">Upload History</h3>
           </div>
-          <div className="divide-y divide-slate-700/50">
+          <div>
             {[...monthlyUploads].sort((a, b) => b.date > a.date ? 1 : -1).map((u) => (
-              <div key={u.date}>
+              <div key={u.date} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 <button
-                  className="w-full flex items-center justify-between px-5 py-3 hover:bg-slate-700/30 text-left"
+                  className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/[0.03] text-left transition-colors"
                   onClick={() => setExpandedUpload(expandedUpload === u.date ? null : u.date)}
                 >
                   <div className="flex items-center gap-3">
@@ -265,7 +267,10 @@ export default function Upload() {
       {confirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setConfirmModal(false)} />
-          <div className="relative bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-700 shadow-2xl">
+          <div
+            className="relative rounded-2xl p-6 max-w-md w-full shadow-2xl"
+            style={{ background: 'linear-gradient(145deg, #0d1a30, #080e20)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-8 h-8 text-amber-400 shrink-0" />
               <div>

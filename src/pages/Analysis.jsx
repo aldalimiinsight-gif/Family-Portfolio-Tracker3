@@ -156,7 +156,7 @@ export default function Analysis() {
   return (
     <div className="page-enter p-4 md:p-6 space-y-6">
       {/* Search */}
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700/50">
+      <div className="card p-6">
         <h2 className="text-white font-semibold text-base mb-1">Stock Financial Analysis</h2>
         <p className="text-slate-400 text-sm mb-4">
           Analyze any stock — US, QSE (.QA suffix), or Tadawul (.SR suffix). Fetches live financial ratios and historical data.
@@ -168,13 +168,15 @@ export default function Analysis() {
               value={ticker}
               onChange={(e) => setTicker(e.target.value.toUpperCase())}
               placeholder="Enter ticker: AAPL, QNBK.QA, 2222.SR, MSFT…"
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-white placeholder-slate-500 focus:outline-none transition-colors"
+              style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg text-white font-medium flex items-center gap-2"
+            className="px-5 py-2.5 disabled:opacity-50 rounded-lg text-white font-medium flex items-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.25)' }}
           >
             {loading ? <Loader className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />}
             Analyze
@@ -185,7 +187,8 @@ export default function Analysis() {
             <button
               key={t}
               onClick={() => setTicker(t)}
-              className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 rounded-md text-slate-300 text-xs"
+              className="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 text-xs transition-colors"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
               {t}
             </button>
@@ -213,7 +216,7 @@ export default function Analysis() {
       {data && !loading && (
         <div className="space-y-4">
           {/* Header */}
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50 flex items-center justify-between gap-4">
+          <div className="card p-5 flex items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-white font-bold text-xl">{data.ticker}</h2>
@@ -255,7 +258,7 @@ export default function Analysis() {
 
           {/* Tab: Ratios */}
           {activeTab === 'ratios' && (
-            <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
+            <div className="card overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-700">
                 <h3 className="text-white font-semibold text-sm">10 Key Financial Ratios</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Based on latest available data from Yahoo Finance</p>
@@ -283,7 +286,7 @@ export default function Analysis() {
 
           {/* Tab: Income Statement */}
           {activeTab === 'income' && (
-            <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
+            <div className="card overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-700">
                 <h3 className="text-white font-semibold text-sm">Annual Income Statement</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Last 4 fiscal years (in billions USD)</p>
@@ -296,7 +299,7 @@ export default function Analysis() {
 
           {/* Tab: Verdict */}
           {activeTab === 'verdict' && (
-            <div className="bg-slate-800 rounded-xl border border-slate-700/50 p-5 space-y-4">
+            <div className="card p-5 space-y-4">
               <h3 className="text-white font-semibold text-sm">Buy / Hold / Sell Analysis</h3>
               <Verdict ratios={data.ratios || {}} />
 
@@ -345,7 +348,7 @@ export default function Analysis() {
 
           {/* Tab: Profile */}
           {activeTab === 'profile' && (
-            <div className="bg-slate-800 rounded-xl border border-slate-700/50 p-5 space-y-4">
+            <div className="card p-5 space-y-4">
               <h3 className="text-white font-semibold text-sm">Company Profile</h3>
               {data.ratios?.description ? (
                 <p className="text-slate-300 text-sm leading-relaxed">{data.ratios.description}</p>

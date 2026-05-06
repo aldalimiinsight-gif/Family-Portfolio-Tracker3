@@ -81,9 +81,9 @@ export default function RealEstate() {
           { label: 'Annual Income', value: fmtCurrency(totals.annualIncome, 'USD', true), color: 'text-emerald-400' },
           { label: 'Avg. ROI', value: fmtPct(totals.avgROI, 1), color: 'text-blue-400' },
         ].map((item) => (
-          <div key={item.label} className="bg-slate-800 rounded-xl p-4 border border-slate-700/50">
-            <p className="text-slate-400 text-xs uppercase tracking-wider">{item.label}</p>
-            <p className={`font-bold text-xl mt-1 num ${item.color}`}>{item.value}</p>
+          <div key={item.label} className="card p-4">
+            <p className="section-label mb-1.5">{item.label}</p>
+            <p className={`font-bold text-xl num ${item.color}`}>{item.value}</p>
           </div>
         ))}
       </div>
@@ -91,7 +91,7 @@ export default function RealEstate() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Chart */}
         {realEstate.length > 0 && (
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <h3 className="text-white font-semibold text-sm mb-3">Portfolio Distribution</h3>
             <AllocationChart data={chartData} />
           </div>
@@ -103,7 +103,8 @@ export default function RealEstate() {
             <h2 className="text-white font-semibold">Properties</h2>
             <button
               onClick={openAdd}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-white text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+              style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', boxShadow: '0 0 20px rgba(139,92,246,0.25)' }}
             >
               <Plus className="w-4 h-4" />
               Add Property
@@ -128,7 +129,7 @@ export default function RealEstate() {
                 const monthly = annual / 12;
                 const alloc = totals.invested > 0 ? ((p.investmentAmount || 0) / totals.invested) * 100 : 0;
                 return (
-                  <div key={p.id} className="bg-slate-800 rounded-xl p-5 border border-slate-700/50 card-hover">
+                  <div key={p.id} className="card p-5">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -165,8 +166,8 @@ export default function RealEstate() {
                       <div>
                         <p className="text-slate-500 text-xs">Portfolio Share</p>
                         <p className="text-slate-300 font-semibold text-sm num">{fmtPct(alloc, 1)}</p>
-                        <div className="h-1.5 bg-slate-700 rounded-full mt-1">
-                          <div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min(alloc, 100)}%` }} />
+                        <div className="h-1.5 rounded-full mt-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${Math.min(alloc, 100)}%`, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)' }} />
                         </div>
                       </div>
                     </div>

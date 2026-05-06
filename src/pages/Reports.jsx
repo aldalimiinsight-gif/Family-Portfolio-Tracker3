@@ -64,7 +64,8 @@ export default function Reports() {
         </div>
         <button
           onClick={handleDownloadPDF}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.3)' }}
         >
           <Download className="w-4 h-4" />
           Download PDF
@@ -74,7 +75,14 @@ export default function Reports() {
       {/* Report body */}
       <div ref={reportRef} className="space-y-6">
         {/* Header card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700/50">
+        <div
+          className="rounded-2xl p-6"
+          style={{
+            background: 'linear-gradient(145deg, #0d1a30 0%, #080e20 100%)',
+            border: '1px solid rgba(99,102,241,0.18)',
+            boxShadow: '0 0 60px rgba(99,102,241,0.08), 0 4px 32px rgba(0,0,0,0.5)',
+          }}
+        >
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
               <Activity className="w-6 h-6 text-white" />
@@ -93,9 +101,9 @@ export default function Reports() {
               { label: 'Real Estate', value: fmtCurrency(totals.reVal, 'USD', true), color: 'text-purple-400', sub: `${realEstate.length} properties` },
               { label: 'Business', value: fmtCurrency(totals.bizVal, 'USD', true), color: 'text-emerald-400', sub: `${business.length} ventures` },
             ].map((item) => (
-              <div key={item.label} className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30">
-                <p className="text-slate-400 text-xs uppercase tracking-wider">{item.label}</p>
-                <p className={`font-bold text-xl mt-1 num ${item.color}`}>{item.value}</p>
+              <div key={item.label} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <p className="section-label mb-1.5">{item.label}</p>
+                <p className={`font-bold text-xl num ${item.color}`}>{item.value}</p>
                 <p className="text-slate-500 text-xs mt-0.5">{item.sub}</p>
               </div>
             ))}
@@ -104,11 +112,11 @@ export default function Reports() {
 
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <h3 className="text-white font-semibold text-sm mb-3">Asset Allocation</h3>
             <AllocationChart data={allocation} />
           </div>
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <h3 className="text-white font-semibold text-sm mb-3">Family Ownership</h3>
             <FamilyOwnershipChart data={memberData} />
           </div>
@@ -116,7 +124,7 @@ export default function Reports() {
 
         {/* Performance highlights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               <h3 className="text-slate-400 text-xs font-medium uppercase tracking-wider">Top Performer</h3>
@@ -135,7 +143,7 @@ export default function Reports() {
             ) : <p className="text-slate-500 text-sm">No data</p>}
           </div>
 
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <div className="flex items-center gap-2 mb-3">
               <Building2 className="w-4 h-4 text-purple-400" />
               <h3 className="text-slate-400 text-xs font-medium uppercase tracking-wider">Real Estate Income</h3>
@@ -151,7 +159,7 @@ export default function Reports() {
             )}
           </div>
 
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+          <div className="card p-5">
             <div className="flex items-center gap-2 mb-3">
               <Briefcase className="w-4 h-4 text-emerald-400" />
               <h3 className="text-slate-400 text-xs font-medium uppercase tracking-wider">Business Portfolio</h3>
@@ -168,8 +176,8 @@ export default function Reports() {
 
         {/* Stock positions table */}
         {stockMetrics.length > 0 && (
-          <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-700">
+          <div className="card overflow-hidden">
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-blue-400" />
                 <h3 className="text-white font-semibold text-sm">Stock Portfolio Snapshot</h3>
@@ -211,8 +219,8 @@ export default function Reports() {
 
         {/* Family breakdown */}
         {memberData.length > 0 && (
-          <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-700">
+          <div className="card overflow-hidden">
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-blue-400" />
                 <h3 className="text-white font-semibold text-sm">What Each Member Owns</h3>

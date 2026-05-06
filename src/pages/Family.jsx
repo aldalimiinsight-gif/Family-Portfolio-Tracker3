@@ -116,11 +116,11 @@ export default function Family() {
     <div className="page-enter p-4 md:p-6 space-y-6">
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+        <div className="card p-5">
           <h3 className="text-white font-semibold text-sm mb-3">Ownership Distribution</h3>
           <FamilyOwnershipChart data={memberData} />
         </div>
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700/50">
+        <div className="card p-5">
           <h3 className="text-white font-semibold text-sm mb-3">Cumulative Contributions</h3>
           <GrowthChart data={growthHistory} />
         </div>
@@ -130,7 +130,11 @@ export default function Family() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-semibold">Family Members</h2>
-          <button onClick={openAddMember} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm font-medium">
+          <button
+            onClick={openAddMember}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.25)' }}
+          >
             <Plus className="w-4 h-4" /> Add Member
           </button>
         </div>
@@ -149,9 +153,9 @@ export default function Family() {
         ) : (
           <div className="space-y-4">
             {memberData.map((m) => (
-              <div key={m.id} className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
+              <div key={m.id} className="card overflow-hidden">
                 {/* Member header */}
-                <div className="flex items-center gap-4 p-5 border-b border-slate-700/50">
+                <div className="flex items-center gap-4 p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0"
                     style={{ backgroundColor: m.color || '#3b82f6' }}
@@ -173,10 +177,13 @@ export default function Family() {
                         Net Worth: <span className="text-emerald-400 font-bold num">{fmtCurrency(m.netWorth, 'USD', true)}</span>
                       </span>
                     </div>
-                    <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div
                         className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${Math.min(m.ownershipPct, 100)}%`, backgroundColor: m.color || '#3b82f6' }}
+                        style={{
+                          width: `${Math.min(m.ownershipPct, 100)}%`,
+                          background: `linear-gradient(90deg, ${m.color || '#6366f1'}, ${m.color || '#6366f1'}88)`,
+                        }}
                       />
                     </div>
                   </div>
@@ -196,10 +203,10 @@ export default function Family() {
                 {/* Contributions list */}
                 {(contribByMember[m.id] || []).length > 0 && (
                   <div className="px-5 py-3">
-                    <p className="text-slate-500 text-xs uppercase tracking-wider mb-2">Contributions ({contribByMember[m.id].length})</p>
+                    <p className="section-label mb-2">Contributions ({contribByMember[m.id].length})</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                       {[...contribByMember[m.id]].sort((a, b) => a.date > b.date ? -1 : 1).map((c) => (
-                        <div key={c.id} className="bg-slate-700/40 rounded-lg p-2.5 group relative">
+                        <div key={c.id} className="rounded-lg p-2.5 group relative" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                           <p className="text-slate-400 text-xs">{c.date}</p>
                           <p className="text-white font-semibold text-sm num">{fmtCurrency(c.amount, c.currency || 'USD', true)}</p>
                           <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5">

@@ -11,7 +11,6 @@ export default function Header({ onMenuClick, title }) {
   const { refreshAll } = useStockPrices();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Count stocks above alert threshold
   const alertCount = state.stocks.filter((s) => {
     const live = state.prices?.[s.ticker];
     if (!live?.price) return false;
@@ -19,56 +18,73 @@ export default function Header({ onMenuClick, title }) {
     return unrealizedPnLPct >= (s.alertThreshold || state.settings.alertThreshold);
   }).length;
 
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setRefreshing(true);
     refreshAll();
     setTimeout(() => setRefreshing(false), 2000);
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3">
+    <header
+      className="sticky top-0 z-20 px-4 py-3 shrink-0"
+      style={{
+        background: 'rgba(6, 11, 24, 0.88)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        boxShadow: '0 1px 0 rgba(99,102,241,0.06)',
+      }}
+    >
       <div className="flex items-center justify-between gap-4">
-        {/* Left: menu + title */}
+        {/* Left */}
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <h1 className="text-white font-semibold text-base">{title}</h1>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:block w-px h-4 bg-white/10" />
+            <h1 className="text-white font-semibold text-sm tracking-tight">{title}</h1>
+          </div>
         </div>
 
-        {/* Right: actions */}
-        <div className="flex items-center gap-2">
-          {/* Refresh prices */}
+        {/* Right actions */}
+        <div className="flex items-center gap-1">
           <button
             onClick={handleRefresh}
             title="Refresh stock prices"
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-indigo-400' : ''}`} />
           </button>
 
-          {/* Alert badge */}
           {alertCount > 0 && (
             <div className="relative">
-              <button className="p-2 rounded-lg text-amber-400 hover:bg-slate-800 transition-colors pulse-alert">
+              <button className="p-2 rounded-lg text-amber-400 hover:bg-white/5 transition-colors pulse-alert">
                 <Bell className="w-4 h-4" />
               </button>
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">
+              <span
+                className="absolute -top-0.5 -right-0.5 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold"
+                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+              >
                 {alertCount}
               </span>
             </div>
           )}
 
-          {/* Theme toggle */}
+          {/* Divider */}
+          <div className="w-px h-4 bg-white/10 mx-1" />
+
           <button
             onClick={toggle}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             title="Toggle theme"
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
           >
-            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {dark
+              ? <Sun className="w-4 h-4 text-amber-400" />
+              : <Moon className="w-4 h-4" />
+            }
           </button>
         </div>
       </div>

@@ -20,20 +20,30 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: 'rgba(2,4,12,0.8)' }}
         onClick={onClose}
       />
 
-      {/* Dialog */}
-      <div className={`relative w-full ${sizeMap[size]} bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 flex flex-col max-h-[90vh]`}>
+      <div
+        className={`relative w-full ${sizeMap[size]} rounded-2xl shadow-2xl flex flex-col max-h-[90vh]`}
+        style={{
+          background: 'linear-gradient(145deg, #0d1a30 0%, #080e20 100%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.1)',
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 shrink-0">
+        <div
+          className="flex items-center justify-between px-6 py-4 shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        >
           <h2 className="text-white font-semibold text-base">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
           >
             <X className="w-4 h-4" />
           </button>

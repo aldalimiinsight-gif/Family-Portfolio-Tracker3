@@ -117,9 +117,9 @@ export default function Stocks() {
           { label: 'Unrealized P&L', value: fmtPct(totals.pnlPct), color: pnlColor(totals.pnlPct) },
           { label: 'Positions', value: `${stocks.length}` },
         ].map((item) => (
-          <div key={item.label} className="bg-slate-800 rounded-xl p-4 border border-slate-700/50">
-            <p className="text-slate-400 text-xs uppercase tracking-wider">{item.label}</p>
-            <p className={`font-bold text-xl mt-1 num ${item.color || 'text-white'}`}>{item.value}</p>
+          <div key={item.label} className="card p-4">
+            <p className="section-label mb-1.5">{item.label}</p>
+            <p className={`font-bold text-xl num ${item.color || 'text-white'}`}>{item.value}</p>
           </div>
         ))}
       </div>
@@ -132,34 +132,39 @@ export default function Stocks() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search ticker or name…"
-            className="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500/60 transition-colors"
+            style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
           />
         </div>
         <select
           value={filterExchange}
           onChange={(e) => setFilterExchange(e.target.value)}
-          className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 rounded-lg text-slate-300 text-sm focus:outline-none"
+          style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <option value="All">All Exchanges</option>
           {EXCHANGES.map((ex) => <option key={ex}>{ex}</option>)}
         </select>
         <button
           onClick={() => setSettingsOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 text-sm hover:border-slate-600"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-amber-400 text-sm hover:bg-amber-500/10 transition-colors"
+          style={{ border: '1px solid rgba(245,158,11,0.2)' }}
         >
           <SlidersHorizontal className="w-4 h-4" />
           Alert: {settings.alertThreshold}%
         </button>
         <button
           onClick={refreshAll}
-          className="flex items-center gap-2 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-300 text-sm hover:bg-slate-600"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 text-sm hover:text-white transition-colors"
+          style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <RefreshCw className="w-4 h-4" />
-          Refresh Prices
+          Refresh
         </button>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.25)' }}
         >
           <Plus className="w-4 h-4" />
           Add Stock
@@ -173,31 +178,31 @@ export default function Stocks() {
           title="No stocks yet"
           description="Add your first stock position to start tracking your portfolio performance."
           action={
-            <button onClick={openAdd} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm font-medium flex items-center gap-2">
+            <button onClick={openAdd} className="px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
               <Plus className="w-4 h-4" /> Add Stock
             </button>
           }
         />
       ) : (
-        <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
+        <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Stock</th>
-                  <th className="text-left px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Exchange</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Qty</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Cost/sh</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Current</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Cost Basis</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Mkt Value</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">P&L</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">P&L %</th>
-                  <th className="text-right px-4 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Day</th>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <th className="text-left px-4 py-3 section-label">Stock</th>
+                  <th className="text-left px-4 py-3 section-label">Exchange</th>
+                  <th className="text-right px-4 py-3 section-label">Qty</th>
+                  <th className="text-right px-4 py-3 section-label">Cost/sh</th>
+                  <th className="text-right px-4 py-3 section-label">Current</th>
+                  <th className="text-right px-4 py-3 section-label">Cost Basis</th>
+                  <th className="text-right px-4 py-3 section-label">Mkt Value</th>
+                  <th className="text-right px-4 py-3 section-label">P&L</th>
+                  <th className="text-right px-4 py-3 section-label">P&L %</th>
+                  <th className="text-right px-4 py-3 section-label">Day</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 {filtered.map((stock) => {
                   const live = prices?.[stock.ticker];
                   const loading = state.pricesLoading?.[stock.ticker];
@@ -205,7 +210,7 @@ export default function Stocks() {
                   const isAlert = m.unrealizedPnLPct >= (stock.alertThreshold || settings.alertThreshold);
 
                   return (
-                    <tr key={stock.id} className="tr-hover">
+                    <tr key={stock.id} className="tr-hover" style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {isAlert && (
