@@ -25,21 +25,9 @@ function addSection(doc, title, y) {
   return y + 13;
 }
 
-function addMetric(doc, label, value, x, y, highlight = false) {
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(148, 163, 184);
-  doc.text(label, x, y);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...(highlight ? [34, 197, 94] : [248, 250, 252]));
-  doc.text(value, x, y + 6);
-  return y + 14;
-}
-
 export function generateExecutiveSummaryPDF({ state, prices, memberData, totals }) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const { stocks, realEstate, business, members, contributions, settings } = state;
+  const { stocks } = state;
 
   addHeader(doc, 'Executive Summary Report');
 

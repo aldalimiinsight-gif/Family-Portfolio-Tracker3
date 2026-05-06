@@ -94,8 +94,8 @@ export default function Upload() {
   return (
     <div className="page-enter p-4 md:p-6 space-y-6">
       {/* Info banner */}
-      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-        <h3 className="text-blue-400 font-semibold text-sm mb-1">Monthly Data Upload</h3>
+      <div className="rounded-xl p-4" style={{ background: 'rgba(212,160,23,0.06)', border: '1px solid rgba(212,160,23,0.15)' }}>
+        <h3 className="font-semibold text-sm mb-1" style={{ color: '#d4a017' }}>Monthly Data Upload</h3>
         <p className="text-slate-400 text-sm leading-relaxed">
           Upload an Excel file each month containing your deposits, stock purchases, real estate, and business investments.
           The system will append the new data and recalculate all ownership percentages automatically.
@@ -107,18 +107,16 @@ export default function Upload() {
         <div className="space-y-4">
           <div
             {...getRootProps()}
-            className={[
-              'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all',
-          'border-slate-700/60',
-              isDragActive
-                ? 'border-indigo-500 bg-indigo-500/10'
-                : 'hover:border-indigo-500/40',
-            ].join(' ')}
+            className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
+            style={{
+              borderColor: isDragActive ? 'rgba(212,160,23,0.7)' : 'rgba(56,82,112,0.6)',
+              background: isDragActive ? 'rgba(212,160,23,0.06)' : 'transparent',
+            }}
           >
             <input {...getInputProps()} />
             <UploadIcon className="w-10 h-10 text-slate-500 mx-auto mb-3" />
             {isDragActive ? (
-              <p className="text-blue-400 font-medium">Drop the file here…</p>
+              <p className="font-medium" style={{ color: '#d4a017' }}>Drop the file here…</p>
             ) : (
               <>
                 <p className="text-slate-300 font-medium mb-1">Drag & drop your Excel / CSV file</p>
@@ -153,7 +151,7 @@ export default function Upload() {
           <div className="p-5">
             {parsing && (
               <div className="flex items-center gap-3 text-slate-400 py-8 justify-center">
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#d4a017', borderTopColor: 'transparent' }} />
                 Parsing file…
               </div>
             )}
@@ -220,7 +218,7 @@ export default function Upload() {
 
                 <button
                   onClick={handleImport}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium text-sm"
+                  className="w-full py-2.5 rounded-lg text-white font-semibold text-sm btn-gold"
                 >
                   Import Data
                 </button>

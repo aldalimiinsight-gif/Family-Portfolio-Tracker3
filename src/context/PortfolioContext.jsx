@@ -179,10 +179,13 @@ function loadState() {
 
 function saveState(state) {
   try {
-    // Don't persist live prices (always re-fetch)
+    // Exclude live prices — always re-fetched on startup
+    // eslint-disable-next-line no-unused-vars
     const { prices, pricesLoading, ...persist } = state;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
-  } catch {}
+  } catch (e) {
+    console.warn('Portfolio save failed:', e);
+  }
 }
 
 export function PortfolioProvider({ children }) {
@@ -208,6 +211,7 @@ export function PortfolioProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePortfolio() {
   return useContext(PortfolioContext);
 }

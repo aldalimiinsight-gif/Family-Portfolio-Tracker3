@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { FileText, Download, TrendingUp, Building2, Briefcase, Users, Activity } from 'lucide-react';
+import { Download, TrendingUp, Building2, Briefcase, Users, Activity } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import {
   calcTotalPortfolioValue, calcMemberContributions, calcMemberNetWorth,
@@ -36,7 +36,6 @@ export default function Reports() {
   );
 
   const topPerformer = stockMetrics[0];
-  const worstPerformer = stockMetrics[stockMetrics.length - 1];
 
   const totalRealEstateIncome = useMemo(() =>
     realEstate.reduce((s, p) => s + (p.investmentAmount || 0) * (p.annualizedROI || 0) / 100, 0),
@@ -47,7 +46,7 @@ export default function Reports() {
     try {
       generateExecutiveSummaryPDF({ state, prices, memberData, totals });
       toast.success('Report downloaded!');
-    } catch (err) {
+    } catch {
       toast.error('Failed to generate PDF');
     }
   };
@@ -64,8 +63,7 @@ export default function Reports() {
         </div>
         <button
           onClick={handleDownloadPDF}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.3)' }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium btn-gold"
         >
           <Download className="w-4 h-4" />
           Download PDF
@@ -79,12 +77,12 @@ export default function Reports() {
           className="rounded-2xl p-6"
           style={{
             background: 'linear-gradient(145deg, #0d1a30 0%, #080e20 100%)',
-            border: '1px solid rgba(99,102,241,0.18)',
-            boxShadow: '0 0 60px rgba(99,102,241,0.08), 0 4px 32px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(212,160,23,0.2)',
+            boxShadow: '0 0 60px rgba(212,160,23,0.06), 0 4px 32px rgba(0,0,0,0.5)',
           }}
         >
           <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4a017, #9a7b1a)' }}>
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>

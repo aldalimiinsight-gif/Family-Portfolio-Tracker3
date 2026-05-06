@@ -9,9 +9,12 @@ export function useStockPrices() {
   const { stocks, prices, pricesLoading } = state;
   const fetchedRef = useRef(new Set());
 
-  const fetchPrice = useCallback(async (ticker) => {
-    const cached = prices[ticker];
-    if (cached && Date.now() - cached.lastUpdated < CACHE_TTL) return;
+  // force=true skips the TTL cache check — avoids stale-closure race in refresh functions
+  const fetchPrice = useCallback(async (ticker, force = false) => {
+    if (!force) {
+      const cached = prices[ticker];
+      if (cached && cached.lastUpdated && Date.now() - cached.lastUpdated < CACHE_TTL) return;
+    }
     if (pricesLoading[ticker]) return;
 
     setPriceLoading(ticker, true);
@@ -19,13 +22,14 @@ export function useStockPrices() {
       const data = await fetchStockPrice(ticker);
       setPrice(ticker, data);
     } catch (err) {
-      // Store a fallback so we don't retry constantly
-      setPrice(ticker, { ticker, price: null, error: err.message });
+      // Persist a sentinel so we don't retry on every render cycle
+      setPrice(ticker, { ticker, price: null, error: err.message, lastUpdated: Date.now() });
     } finally {
       setPriceLoading(ticker, false);
     }
   }, [prices, pricesLoading, setPrice, setPriceLoading]);
 
+  // Fetch prices for any ticker not yet attempted this session
   useEffect(() => {
     if (!stocks.length) return;
     stocks.forEach((stock) => {
@@ -37,16 +41,17 @@ export function useStockPrices() {
     });
   }, [stocks, fetchPrice]);
 
+  // Force-refresh all prices regardless of cache age
   const refreshAll = useCallback(() => {
     fetchedRef.current.clear();
-    stocks.forEach((s) => fetchPrice(s.ticker));
+    stocks.forEach((s) => fetchPrice(s.ticker, true));
   }, [stocks, fetchPrice]);
 
+  // Force-refresh a single ticker — passes force=true to bypass the stale closure issue
   const refreshTicker = useCallback((ticker) => {
-    // Force re-fetch by clearing cache entry
-    setPrice(ticker, { ticker, price: null, lastUpdated: 0 });
-    fetchPrice(ticker);
-  }, [setPrice, fetchPrice]);
+    fetchedRef.current.delete(ticker);
+    fetchPrice(ticker, true);
+  }, [fetchPrice]);
 
   return { refreshAll, refreshTicker };
 }

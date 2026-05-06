@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-const renderLabel = ({ name, pct }) => (pct > 5 ? `${pct.toFixed(1)}%` : '');
+const renderLabel = ({ pct }) => (pct > 5 ? `${pct.toFixed(1)}%` : '');
 
 export default function AllocationChart({ data }) {
   const hasData = data && data.some((d) => d.value > 0);

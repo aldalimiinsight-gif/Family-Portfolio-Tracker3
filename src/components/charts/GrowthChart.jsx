@@ -34,9 +34,9 @@ export default function GrowthChart({ data }) {
       <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.35} />
-            <stop offset="60%" stopColor="#6366f1" stopOpacity={0.08} />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+            <stop offset="0%" stopColor="#d4a017" stopOpacity={0.35} />
+            <stop offset="60%" stopColor="#d4a017" stopOpacity={0.08} />
+            <stop offset="100%" stopColor="#d4a017" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -57,11 +57,11 @@ export default function GrowthChart({ data }) {
         <Area
           type="monotone"
           dataKey="value"
-          stroke="#6366f1"
+          stroke="#d4a017"
           strokeWidth={2}
           fill="url(#growthGrad)"
           dot={false}
-          activeDot={{ r: 4, fill: '#818cf8', stroke: '#6366f1', strokeWidth: 2 }}
+          activeDot={{ r: 4, fill: '#f5d060', stroke: '#d4a017', strokeWidth: 2 }}
         />
       </AreaChart>
     </ResponsiveContainer>

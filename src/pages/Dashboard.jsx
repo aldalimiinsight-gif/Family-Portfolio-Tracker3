@@ -13,7 +13,7 @@ import GrowthChart from '../components/charts/GrowthChart';
 import StockBarChart from '../components/charts/StockBarChart';
 
 /* ── Metric card ──────────────────────────────────────────────────────── */
-function KpiCard({ label, value, sub, color = '#d4a017', bgColor, icon: Icon }) {
+function KpiCard({ label, value, sub, color = '#d4a017', icon: Icon }) {
   return (
     <div
       className="rounded-2xl p-5 relative overflow-hidden"

@@ -31,7 +31,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
         style={{
           background: 'linear-gradient(145deg, #0d1a30 0%, #080e20 100%)',
           border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.1)',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,160,23,0.1)',
         }}
       >
         {/* Header */}

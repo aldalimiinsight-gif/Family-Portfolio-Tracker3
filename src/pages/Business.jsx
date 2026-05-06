@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Briefcase, TrendingUp, Building } from 'lucide-react';
+import { Plus, Pencil, Trash2, Briefcase } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { calcBusinessPnL, fmtCurrency, fmtPct, pnlColor, pnlBg } from '../utils/calculations';
 import Modal from '../components/common/Modal';
