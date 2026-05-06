@@ -35,8 +35,8 @@ export default function Business() {
     e.preventDefault();
     const biz = {
       ...form,
-      capitalInvested: parseFloat(form.capitalInvested),
-      ownershipPercent: parseFloat(form.ownershipPercent),
+      capitalInvested: parseFloat(form.capitalInvested) || 0,
+      ownershipPercent: parseFloat(form.ownershipPercent) || 0,
       currentValuation: parseFloat(form.currentValuation) || 0,
     };
     if (!biz.businessName || !biz.capitalInvested) {
@@ -222,6 +222,7 @@ export default function Business() {
                 value={form.ownershipPercent}
                 onChange={(e) => setForm({ ...form, ownershipPercent: e.target.value })}
                 placeholder="15"
+                required
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
               />
             </div>

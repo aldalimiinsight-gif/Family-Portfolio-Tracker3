@@ -19,11 +19,11 @@ export default function Reports() {
   const allocation = useMemo(() => calcAllocation(totals.stocksVal, totals.reVal, totals.bizVal), [totals]);
 
   const memberData = useMemo(() =>
-    calcMemberContributions(contributions, members).map((m) => ({
+    calcMemberContributions(contributions, members, settings.exchangeRates).map((m) => ({
       ...m,
       netWorth: calcMemberNetWorth(m, totals.total),
     })),
-    [contributions, members, totals.total]
+    [contributions, members, settings.exchangeRates, totals.total]
   );
 
   const stockMetrics = useMemo(() =>

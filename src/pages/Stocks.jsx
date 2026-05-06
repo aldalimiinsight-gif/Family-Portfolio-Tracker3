@@ -33,8 +33,6 @@ export default function Stocks() {
   const [alertThreshold, setAlertThreshold] = useState(settings.alertThreshold);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  useStockPrices();
-
   const openAdd = () => { setEditing(null); setForm(defaultForm); setModal(true); };
   const openEdit = (stock) => {
     setEditing(stock.id);

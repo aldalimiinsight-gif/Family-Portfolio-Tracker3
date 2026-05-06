@@ -104,12 +104,12 @@ export function calcTotalPortfolioValue(state, prices) {
 
 // ---- FAMILY OWNERSHIP ----
 
-export function calcMemberContributions(contributions, members) {
+export function calcMemberContributions(contributions, members, exchangeRates = {}) {
   const totals = {};
   members.forEach((m) => { totals[m.id] = 0; });
 
   contributions.forEach((c) => {
-    const amt = toUSD(c.amount, c.currency || 'USD', {});
+    const amt = toUSD(c.amount, c.currency || 'USD', exchangeRates);
     if (totals[c.memberId] !== undefined) {
       totals[c.memberId] += amt;
     }

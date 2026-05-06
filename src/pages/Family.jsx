@@ -32,11 +32,11 @@ export default function Family() {
   const totals = useMemo(() => calcTotalPortfolioValue(state, prices), [state, prices]);
 
   const memberData = useMemo(() =>
-    calcMemberContributions(contributions, members).map((m) => ({
+    calcMemberContributions(contributions, members, settings.exchangeRates).map((m) => ({
       ...m,
       netWorth: calcMemberNetWorth(m, totals.total),
     })),
-    [contributions, members, totals.total]
+    [contributions, members, settings.exchangeRates, totals.total]
   );
 
   const growthHistory = useMemo(() => buildGrowthHistory(contributions), [contributions]);

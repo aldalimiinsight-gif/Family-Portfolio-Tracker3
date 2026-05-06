@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { fmtCurrency, fmtPct, calcMemberContributions, calcMemberNetWorth } from './calculations';
+import { fmtCurrency, fmtPct, calcMemberNetWorth } from './calculations';
 
 function addHeader(doc, title) {
   doc.setFillColor(15, 23, 42);
@@ -32,7 +32,7 @@ function addMetric(doc, label, value, x, y, highlight = false) {
   doc.text(label, x, y);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(highlight ? [34, 197, 94] : [248, 250, 252]);
+  doc.setTextColor(...(highlight ? [34, 197, 94] : [248, 250, 252]));
   doc.text(value, x, y + 6);
   return y + 14;
 }

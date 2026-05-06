@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Search, BarChart3, Loader, RefreshCw, ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Search, BarChart3, Loader, RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { fetchStockAnalysis } from '../utils/stockApi';
-import { ratingClass, fmt, fmtPct } from '../utils/calculations';
+import { fmt, fmtPct } from '../utils/calculations';
 import toast from 'react-hot-toast';
 
 const RATIO_DEFS = [

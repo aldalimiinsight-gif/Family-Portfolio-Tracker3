@@ -30,11 +30,11 @@ export default function Dashboard() {
   );
 
   const memberData = useMemo(
-    () => calcMemberContributions(contributions, members).map((m) => ({
+    () => calcMemberContributions(contributions, members, settings.exchangeRates).map((m) => ({
       ...m,
       netWorth: calcMemberNetWorth(m, totals.total),
     })),
-    [contributions, members, totals.total]
+    [contributions, members, settings.exchangeRates, totals.total]
   );
 
   const growthHistory = useMemo(() => buildGrowthHistory(contributions), [contributions]);
@@ -46,14 +46,6 @@ export default function Dashboard() {
       return { ticker: s.ticker.replace(/\.(QA|SR)$/, ''), name: s.name, pnlPct: unrealizedPnLPct };
     }).sort((a, b) => b.pnlPct - a.pnlPct),
     [stocks, prices, settings.exchangeRates]
-  );
-
-  const totalCost = useMemo(() =>
-    stocks.reduce((sum, s) => {
-      const { costBasisUSD } = calcStockMetrics(s, null, settings.exchangeRates);
-      return sum + costBasisUSD;
-    }, 0) + contributions.reduce((sum, c) => sum + (c.amount || 0), 0),
-    [stocks, contributions, settings.exchangeRates]
   );
 
   const topPerformer = stockPerformance[0];
