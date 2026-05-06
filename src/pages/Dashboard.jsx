@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Building2, Briefcase, Users, ArrowRight, Activity, Bell } from 'lucide-react';
+import { TrendingUp, Building2, Briefcase, Users, ArrowRight, Bell, ChevronRight } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { useStockPrices } from '../hooks/useStockPrices';
 import {
@@ -8,10 +8,66 @@ import {
   calcMemberNetWorth, buildGrowthHistory, calcStockMetrics,
   fmtCurrency, fmtPct, pnlColor,
 } from '../utils/calculations';
-import MetricCard from '../components/common/MetricCard';
 import AllocationChart from '../components/charts/AllocationChart';
 import GrowthChart from '../components/charts/GrowthChart';
 import StockBarChart from '../components/charts/StockBarChart';
+
+/* ── Metric card ──────────────────────────────────────────────────────── */
+function KpiCard({ label, value, sub, color = '#d4a017', bgColor, icon: Icon }) {
+  return (
+    <div
+      className="rounded-2xl p-5 relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(145deg, rgba(11,21,40,0.95), rgba(8,14,28,0.9))',
+        border: `1px solid ${color}18`,
+        boxShadow: `0 4px 24px rgba(0,0,0,0.45), 0 0 0 1px ${color}08`,
+      }}
+    >
+      <div
+        className="absolute -top-6 -right-6 w-20 h-20 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${color}15 0%, transparent 70%)` }}
+      />
+      <div className="flex items-start gap-3 relative z-10">
+        <div
+          className="icon-pill shrink-0"
+          style={{ background: `${color}15`, border: `1px solid ${color}25` }}
+        >
+          <Icon className="w-4 h-4" style={{ color }} />
+        </div>
+        <div className="min-w-0">
+          <p className="section-label mb-1.5">{label}</p>
+          <p className="text-white font-bold text-xl num leading-none">{value}</p>
+          {sub && <p className="text-slate-500 text-xs mt-1">{sub}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Ownership avatars pill ────────────────────────────────────────────── */
+function OwnerPills({ owners = [], members = [], compact = false }) {
+  if (!owners?.length) return null;
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {owners.map((o) => {
+        const m = members.find((mem) => mem.id === o.memberId);
+        if (!m) return null;
+        return (
+          <span key={o.memberId} className="ownership-pill">
+            <span
+              className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-bold shrink-0"
+              style={{ background: m.color || '#d4a017' }}
+            >
+              {m.avatar || m.name[0]}
+            </span>
+            {!compact && m.name}
+            {' '}{o.ownershipPct}%
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { state } = usePortfolio();
@@ -19,10 +75,7 @@ export default function Dashboard() {
 
   const { stocks, realEstate, business, members, contributions, settings, prices } = state;
 
-  const totals = useMemo(
-    () => calcTotalPortfolioValue(state, prices),
-    [state, prices]
-  );
+  const totals = useMemo(() => calcTotalPortfolioValue(state, prices), [state, prices]);
 
   const allocation = useMemo(
     () => calcAllocation(totals.stocksVal, totals.reVal, totals.bizVal),
@@ -57,50 +110,73 @@ export default function Dashboard() {
     return unrealizedPnLPct >= (s.alertThreshold || settings.alertThreshold);
   });
 
+  /* Collect all assets with assigned owners for the ownership table */
+  const ownedAssets = useMemo(() => {
+    const rows = [];
+    stocks.forEach((s) => {
+      if (s.owners?.length) {
+        const live = prices?.[s.ticker];
+        const { currentValueUSD } = calcStockMetrics(s, live, settings.exchangeRates);
+        rows.push({ type: 'Stock', name: s.name || s.ticker, value: currentValueUSD, owners: s.owners, color: '#60a5fa' });
+      }
+    });
+    realEstate.forEach((p) => {
+      if (p.owners?.length) {
+        rows.push({ type: 'Real Estate', name: p.propertyName, value: p.investmentAmount || 0, owners: p.owners, color: '#a78bfa' });
+      }
+    });
+    business.forEach((b) => {
+      if (b.owners?.length) {
+        const val = b.currentValuation && b.ownershipPercent ? (b.currentValuation * b.ownershipPercent) / 100 : b.capitalInvested || 0;
+        rows.push({ type: 'Business', name: b.businessName, value: val, owners: b.owners, color: '#34d399' });
+      }
+    });
+    return rows.sort((a, b) => b.value - a.value).slice(0, 6);
+  }, [stocks, realEstate, business, prices, settings.exchangeRates]);
+
   return (
     <div className="page-enter p-4 md:p-6 space-y-5">
 
-      {/* ── Alert Banner ─────────────────────────────────────────────── */}
+      {/* ── Alert Banner ──────────────────────────────────────────────── */}
       {alertStocks.length > 0 && (
         <div
           className="rounded-xl px-5 py-3.5 flex items-center gap-3"
           style={{
-            background: 'linear-gradient(90deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06))',
-            border: '1px solid rgba(245,158,11,0.25)',
+            background: 'linear-gradient(90deg, rgba(212,160,23,0.12), rgba(212,160,23,0.04))',
+            border: '1px solid rgba(212,160,23,0.25)',
           }}
         >
-          <Bell className="w-4 h-4 text-amber-400 shrink-0 pulse-alert" />
+          <Bell className="w-4 h-4 pulse-alert shrink-0" style={{ color: '#d4a017' }} />
           <div className="flex-1 min-w-0">
-            <p className="text-amber-300 font-semibold text-sm">
-              {alertStocks.length} position{alertStocks.length > 1 ? 's' : ''} hit your profit alert
+            <p className="font-semibold text-sm" style={{ color: '#f5d060' }}>
+              {alertStocks.length} position{alertStocks.length > 1 ? 's' : ''} reached your profit alert
             </p>
-            <p className="text-amber-500/70 text-xs truncate">
+            <p className="text-xs text-slate-500 truncate">
               {alertStocks.map((s) => s.name || s.ticker).join(' · ')}
             </p>
           </div>
-          <Link to="/stocks" className="text-amber-400 hover:text-amber-300 shrink-0 transition-colors">
+          <Link to="/stocks" className="shrink-0 transition-colors" style={{ color: '#d4a017' }}>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       )}
 
-      {/* ── Hero: Total Portfolio ─────────────────────────────────────── */}
+      {/* ── Hero: Total Portfolio ──────────────────────────────────────── */}
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, #0d1a30 0%, #080e20 100%)',
-          border: '1px solid rgba(99,102,241,0.18)',
-          boxShadow: '0 0 60px rgba(99,102,241,0.08), 0 4px 32px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(145deg, #0d1b2e 0%, #070d1c 100%)',
+          border: '1px solid rgba(212,160,23,0.2)',
+          boxShadow: '0 0 60px rgba(212,160,23,0.06), 0 4px 32px rgba(0,0,0,0.5)',
         }}
       >
-        {/* Decorative glow orb */}
         <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)' }}
+          className="absolute -top-20 -right-20 w-56 h-56 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(212,160,23,0.1) 0%, transparent 70%)' }}
         />
         <div
-          className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)' }}
+          className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)' }}
         />
 
         <div className="relative z-10">
@@ -109,7 +185,7 @@ export default function Dashboard() {
             className="font-bold num leading-none mb-4"
             style={{
               fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-              background: 'linear-gradient(135deg, #ffffff 0%, #94b3cc 100%)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #c2d4e6 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -118,12 +194,12 @@ export default function Dashboard() {
             {fmtCurrency(totals.total)}
           </p>
 
-          {/* Mini allocation bars */}
-          <div className="flex gap-1 h-1.5 rounded-full overflow-hidden w-full max-w-sm mb-3">
+          {/* Allocation bars */}
+          <div className="flex gap-1 h-2 rounded-full overflow-hidden w-full max-w-sm mb-3">
             {[
-              { val: totals.stocksVal, color: '#3b82f6' },
-              { val: totals.reVal,    color: '#8b5cf6' },
-              { val: totals.bizVal,   color: '#10b981' },
+              { val: totals.stocksVal, color: '#60a5fa' },
+              { val: totals.reVal,    color: '#a78bfa' },
+              { val: totals.bizVal,   color: '#34d399' },
             ].map((seg, i) => {
               const pct = totals.total > 0 ? (seg.val / totals.total) * 100 : 0;
               return pct > 0 ? (
@@ -136,11 +212,11 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+          <div className="flex flex-wrap gap-5 text-xs text-slate-400">
             {[
-              { label: 'Stocks', val: totals.stocksVal, color: '#3b82f6' },
-              { label: 'Real Estate', val: totals.reVal, color: '#8b5cf6' },
-              { label: 'Business', val: totals.bizVal, color: '#10b981' },
+              { label: 'Stocks',      val: totals.stocksVal, color: '#60a5fa' },
+              { label: 'Real Estate', val: totals.reVal,     color: '#a78bfa' },
+              { label: 'Business',    val: totals.bizVal,    color: '#34d399' },
             ].map((seg) => (
               <span key={seg.label} className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ background: seg.color }} />
@@ -151,47 +227,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── KPI Cards ────────────────────────────────────────────────── */}
+      {/* ── KPI Cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          label="Stock Portfolio"
-          value={fmtCurrency(totals.stocksVal, 'USD', true)}
-          sub={`${stocks.length} positions`}
-          icon={TrendingUp}
-          variant="blue"
-        />
-        <MetricCard
-          label="Real Estate"
-          value={fmtCurrency(totals.reVal, 'USD', true)}
-          sub={`${realEstate.length} properties`}
-          icon={Building2}
-          variant="violet"
-        />
-        <MetricCard
-          label="Business"
-          value={fmtCurrency(totals.bizVal, 'USD', true)}
-          sub={`${business.length} ventures`}
-          icon={Briefcase}
-          variant="emerald"
-        />
-        <MetricCard
-          label="Family Members"
-          value={`${members.length}`}
-          sub={`${contributions.length} contributions`}
-          icon={Users}
-          variant="amber"
-        />
+        <KpiCard label="Stock Portfolio"  value={fmtCurrency(totals.stocksVal, 'USD', true)} sub={`${stocks.length} positions`}      icon={TrendingUp} color="#60a5fa" />
+        <KpiCard label="Real Estate"      value={fmtCurrency(totals.reVal,     'USD', true)} sub={`${realEstate.length} properties`}  icon={Building2}  color="#a78bfa" />
+        <KpiCard label="Business"         value={fmtCurrency(totals.bizVal,    'USD', true)} sub={`${business.length} ventures`}      icon={Briefcase}  color="#34d399" />
+        <KpiCard label="Family Members"   value={`${members.length}`}                        sub={`${contributions.length} entries`}  icon={Users}      color="#d4a017" />
       </div>
 
-      {/* ── Charts Row ───────────────────────────────────────────────── */}
+      {/* ── Charts Row ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Allocation */}
         <div className="card p-5">
           <p className="text-white font-semibold text-sm mb-4">Asset Allocation</p>
           <AllocationChart data={allocation} />
         </div>
-
-        {/* Growth */}
         <div className="card lg:col-span-2 p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-white font-semibold text-sm">Portfolio Growth</p>
@@ -201,14 +250,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Stock P&L + Family ───────────────────────────────────────── */}
+      {/* ── Stock P&L + Family ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Stock P&L bar */}
+        {/* Stock performance */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-white font-semibold text-sm">Stock Performance</p>
-            <Link to="/stocks" className="text-indigo-400 text-xs hover:text-indigo-300 flex items-center gap-1 transition-colors">
-              View all <ArrowRight className="w-3 h-3" />
+            <Link to="/stocks" className="text-xs flex items-center gap-1 transition-colors" style={{ color: '#d4a017' }}>
+              View all <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
           <StockBarChart data={stockPerformance} />
@@ -218,8 +267,8 @@ export default function Dashboard() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-white font-semibold text-sm">Family Equity</p>
-            <Link to="/family" className="text-indigo-400 text-xs hover:text-indigo-300 flex items-center gap-1 transition-colors">
-              Details <ArrowRight className="w-3 h-3" />
+            <Link to="/family" className="text-xs flex items-center gap-1 transition-colors" style={{ color: '#d4a017' }}>
+              Details <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
           {memberData.length === 0 ? (
@@ -227,12 +276,12 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {memberData.map((m) => (
-                <div key={m.id} className="flex items-center gap-3 group">
+                <div key={m.id} className="flex items-center gap-3">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
                     style={{
-                      background: `linear-gradient(135deg, ${m.color || '#6366f1'}, ${m.color || '#6366f1'}99)`,
-                      boxShadow: `0 0 12px ${m.color || '#6366f1'}44`,
+                      background: `linear-gradient(135deg, ${m.color || '#d4a017'}, ${m.color || '#d4a017'}99)`,
+                      boxShadow: `0 0 10px ${m.color || '#d4a017'}33`,
                     }}
                   >
                     {m.avatar || m.name[0]}
@@ -242,12 +291,12 @@ export default function Dashboard() {
                       <span className="text-slate-200 text-sm font-medium">{m.name}</span>
                       <span className="text-white text-sm font-bold num">{fmtCurrency(m.netWorth, 'USD', true)}</span>
                     </div>
-                    <div className="h-1 bg-slate-700/60 rounded-full overflow-hidden">
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div
                         className="h-full rounded-full transition-all duration-700"
                         style={{
                           width: `${m.ownershipPct}%`,
-                          background: `linear-gradient(90deg, ${m.color || '#6366f1'}, ${m.color || '#6366f1'}88)`,
+                          background: `linear-gradient(90deg, ${m.color || '#d4a017'}, ${m.color || '#d4a017'}88)`,
                         }}
                       />
                     </div>
@@ -263,7 +312,56 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Bottom Row ───────────────────────────────────────────────── */}
+      {/* ── Asset Ownership Overview ──────────────────────────────────── */}
+      {ownedAssets.length > 0 && (
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-white font-semibold text-sm">Asset Ownership Overview</p>
+            <span className="text-slate-500 text-xs">Fractional family stakes</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <th className="text-left pb-3 section-label">Asset</th>
+                  <th className="text-left pb-3 section-label">Type</th>
+                  <th className="text-right pb-3 section-label hidden sm:table-cell">Value</th>
+                  <th className="text-left pb-3 section-label">Owners</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ownedAssets.map((asset, idx) => (
+                  <tr key={idx} className="tr-hover" style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+                    <td className="py-3 pr-4">
+                      <p className="text-white text-sm font-medium truncate max-w-[160px]">{asset.name}</p>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          background: `${asset.color}15`,
+                          color: asset.color,
+                          border: `1px solid ${asset.color}30`,
+                        }}
+                      >
+                        {asset.type}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-right hidden sm:table-cell">
+                      <span className="text-slate-300 text-sm num">{fmtCurrency(asset.value, 'USD', true)}</span>
+                    </td>
+                    <td className="py-3">
+                      <OwnerPills owners={asset.owners} members={members} compact />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bottom Stat Cards ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Top performer */}
         <div
@@ -275,8 +373,8 @@ export default function Dashboard() {
         >
           <p className="section-label mb-3">Top Performer</p>
           {topPerformer ? (
-            <div>
-              <p className="text-white font-bold text-base leading-tight">{topPerformer.name || topPerformer.ticker}</p>
+            <>
+              <p className="text-white font-bold text-base">{topPerformer.name || topPerformer.ticker}</p>
               <p className="text-slate-500 text-xs mb-3">{topPerformer.ticker}</p>
               <p
                 className={`text-3xl font-bold num ${pnlColor(topPerformer.pnlPct)}`}
@@ -284,7 +382,7 @@ export default function Dashboard() {
               >
                 {fmtPct(topPerformer.pnlPct)}
               </p>
-            </div>
+            </>
           ) : (
             <p className="text-slate-500 text-sm">No stock data yet</p>
           )}
@@ -302,18 +400,18 @@ export default function Dashboard() {
           {realEstate.length > 0 ? (
             <>
               <p
-                className="text-emerald-400 text-3xl font-bold num"
-                style={{ textShadow: '0 0 24px rgba(52,211,153,0.25)' }}
+                className="text-3xl font-bold num"
+                style={{ color: '#34d399', textShadow: '0 0 24px rgba(52,211,153,0.25)' }}
               >
                 {fmtPct(
-                  realEstate.reduce((sum, p) => sum + (p.annualizedROI || 0), 0) / realEstate.length,
+                  realEstate.reduce((s, p) => s + (p.annualizedROI || 0), 0) / realEstate.length,
                   1
                 )}
               </p>
               <p className="text-slate-500 text-xs mt-1">Avg. annualized ROI</p>
-              <p className="text-emerald-400/70 text-sm font-medium mt-2 num">
+              <p className="text-sm font-medium mt-2 num" style={{ color: '#6ee7b7' }}>
                 {fmtCurrency(
-                  realEstate.reduce((sum, p) => sum + (p.investmentAmount * p.annualizedROI / 100), 0),
+                  realEstate.reduce((s, p) => s + (p.investmentAmount * p.annualizedROI / 100), 0),
                   'USD', true
                 )}/yr
               </p>
@@ -338,15 +436,21 @@ export default function Dashboard() {
             {members.slice(0, 7).map((m) => (
               <div
                 key={m.id}
-                className="w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center text-white text-xs font-bold"
-                style={{ background: `linear-gradient(135deg, ${m.color || '#6366f1'}, ${m.color || '#6366f1'}99)` }}
+                className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold"
+                style={{
+                  background: `linear-gradient(135deg, ${m.color || '#d4a017'}, ${m.color || '#d4a017'}99)`,
+                  borderColor: '#060b18',
+                }}
                 title={m.name}
               >
                 {m.avatar || m.name[0]}
               </div>
             ))}
             {members.length > 7 && (
-              <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold">
+              <div
+                className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-slate-400 text-xs font-bold"
+                style={{ background: '#102035', borderColor: '#060b18' }}
+              >
                 +{members.length - 7}
               </div>
             )}
@@ -356,3 +460,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

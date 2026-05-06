@@ -1,12 +1,10 @@
-import { Menu, Sun, Moon, RefreshCw, Bell } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { Menu, RefreshCw, Bell } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { useStockPrices } from '../../hooks/useStockPrices';
 import { calcStockMetrics } from '../../utils/calculations';
 import { useState } from 'react';
 
 export default function Header({ onMenuClick, title }) {
-  const { dark, toggle } = useTheme();
   const { state } = usePortfolio();
   const { refreshAll } = useStockPrices();
   const [refreshing, setRefreshing] = useState(false);
@@ -28,10 +26,10 @@ export default function Header({ onMenuClick, title }) {
     <header
       className="sticky top-0 z-20 px-4 py-3 shrink-0"
       style={{
-        background: 'rgba(6, 11, 24, 0.88)',
+        background: 'rgba(6, 11, 24, 0.9)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
-        boxShadow: '0 1px 0 rgba(99,102,241,0.06)',
+        boxShadow: '0 1px 0 rgba(212,160,23,0.05)',
       }}
     >
       <div className="flex items-center justify-between gap-4">
@@ -43,9 +41,14 @@ export default function Header({ onMenuClick, title }) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="hidden sm:block w-px h-4 bg-white/10" />
-            <h1 className="text-white font-semibold text-sm tracking-tight">{title}</h1>
+            <h1
+              className="font-semibold text-sm tracking-tight"
+              style={{ color: '#e2edf6' }}
+            >
+              {title}
+            </h1>
           </div>
         </div>
 
@@ -56,36 +59,28 @@ export default function Header({ onMenuClick, title }) {
             title="Refresh stock prices"
             className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-indigo-400' : ''}`} />
+            <RefreshCw
+              className="w-4 h-4 transition-colors"
+              style={refreshing ? { color: '#d4a017', animation: 'spin 1s linear infinite' } : {}}
+            />
           </button>
 
           {alertCount > 0 && (
             <div className="relative">
-              <button className="p-2 rounded-lg text-amber-400 hover:bg-white/5 transition-colors pulse-alert">
+              <button
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors pulse-alert"
+                style={{ color: '#d4a017' }}
+              >
                 <Bell className="w-4 h-4" />
               </button>
               <span
                 className="absolute -top-0.5 -right-0.5 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold"
-                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                style={{ background: 'linear-gradient(135deg, #d4a017, #9a7b1a)' }}
               >
                 {alertCount}
               </span>
             </div>
           )}
-
-          {/* Divider */}
-          <div className="w-px h-4 bg-white/10 mx-1" />
-
-          <button
-            onClick={toggle}
-            title="Toggle theme"
-            className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
-          >
-            {dark
-              ? <Sun className="w-4 h-4 text-amber-400" />
-              : <Moon className="w-4 h-4" />
-            }
-          </button>
         </div>
       </div>
     </header>

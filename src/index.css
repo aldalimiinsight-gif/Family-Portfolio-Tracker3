@@ -2,9 +2,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ─── Design token overrides ───────────────────────────────────────── */
+/* ─── Design tokens ─────────────────────────────────────────────────── */
 @theme {
-  /* Replace flat grey-slate with deep blue-navy */
   --color-slate-950: #02040c;
   --color-slate-900: #060b18;
   --color-slate-800: #0b1528;
@@ -16,25 +15,28 @@
   --color-slate-200: #c2d4e6;
   --color-slate-100: #e2edf6;
 
-  /* Richer accent palette */
-  --color-blue-700:    #1d4ed8;
-  --color-blue-600:    #2563eb;
-  --color-blue-500:    #3b82f6;
-  --color-blue-400:    #60a5fa;
-  --color-indigo-600:  #4338ca;
-  --color-indigo-500:  #6366f1;
-  --color-indigo-400:  #818cf8;
-  --color-violet-600:  #7c3aed;
-  --color-violet-500:  #8b5cf6;
-  --color-violet-400:  #a78bfa;
+  /* Gold palette */
+  --color-gold-300: #f5d060;
+  --color-gold-400: #d4a017;
+  --color-gold-500: #b88c10;
+  --color-gold-600: #9a7b1a;
+
+  /* Accent palette */
   --color-emerald-500: #10b981;
   --color-emerald-400: #34d399;
+  --color-emerald-300: #6ee7b7;
   --color-amber-500:   #f59e0b;
   --color-amber-400:   #fbbf24;
+  --color-blue-500:    #3b82f6;
+  --color-blue-400:    #60a5fa;
   --color-rose-500:    #f43f5e;
   --color-rose-400:    #fb7185;
+  --color-violet-500:  #8b5cf6;
+  --color-violet-400:  #a78bfa;
   --color-cyan-500:    #06b6d4;
   --color-cyan-400:    #22d3ee;
+  --color-indigo-500:  #6366f1;
+  --color-indigo-400:  #818cf8;
 }
 
 /* ─── Global reset ──────────────────────────────────────────────────── */
@@ -44,11 +46,10 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   background-color: #060b18;
-  /* Ambient glow gradients */
   background-image:
-    radial-gradient(ellipse 80% 55% at 15% 8%,  rgba(59, 130, 246, 0.09) 0%, transparent 55%),
-    radial-gradient(ellipse 65% 50% at 85% 92%, rgba(139, 92, 246, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 55% at 15% 8%,  rgba(212, 160, 23, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 65% 50% at 85% 92%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(6, 182, 212, 0.02) 0%, transparent 60%);
 }
 
 #root { width: 100%; min-height: 100vh; }
@@ -68,11 +69,11 @@ body {
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 .card:hover {
-  border-color: rgba(99, 102, 241, 0.18);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(99, 102, 241, 0.1), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  border-color: rgba(212, 160, 23, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 160, 23, 0.08), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
 }
 
-/* Gradient border card (used for hero/featured cards) */
+/* Gold border card (hero/featured cards) */
 .card-gradient-border {
   background: linear-gradient(145deg, #0d1a30, #080e1c);
   border-radius: 16px;
@@ -84,7 +85,7 @@ body {
   inset: 0;
   border-radius: 16px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.4) 0%, rgba(255,255,255,0.05) 40%, rgba(139,92,246,0.25) 100%);
+  background: linear-gradient(135deg, rgba(212,160,23,0.45) 0%, rgba(255,255,255,0.04) 40%, rgba(16,185,129,0.25) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -92,24 +93,27 @@ body {
 }
 
 /* Table row hover */
-.tr-hover:hover { background: rgba(99, 102, 241, 0.05); }
+.tr-hover:hover { background: rgba(212, 160, 23, 0.04); }
 
 /* ─── Typography utilities ──────────────────────────────────────────── */
-/* Large stat gradient */
 .stat-value {
   background: linear-gradient(135deg, #f0f6ff 0%, #94b3cc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-/* Accent gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+  background: linear-gradient(135deg, #d4a017, #f5d060, #34d399);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-/* Section label */
+.gold-text {
+  background: linear-gradient(135deg, #d4a017 0%, #f5d060 50%, #d4a017 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .section-label {
   font-size: 10px;
   font-weight: 600;
@@ -130,9 +134,9 @@ body {
 }
 
 /* ─── Glow variants ─────────────────────────────────────────────────── */
-.glow-blue   { box-shadow: 0 0 24px rgba(59, 130, 246, 0.25); }
-.glow-indigo { box-shadow: 0 0 24px rgba(99, 102, 241, 0.25); }
-.glow-emerald{ box-shadow: 0 0 24px rgba(52, 211, 153, 0.25); }
+.glow-gold    { box-shadow: 0 0 24px rgba(212, 160, 23, 0.3); }
+.glow-emerald { box-shadow: 0 0 24px rgba(52, 211, 153, 0.25); }
+.glow-blue    { box-shadow: 0 0 24px rgba(59, 130, 246, 0.25); }
 
 /* ─── Animations ────────────────────────────────────────────────────── */
 @keyframes fadeUp {
@@ -180,16 +184,41 @@ textarea {
 input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(99, 102, 241, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(212, 160, 23, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.08) !important;
   outline: none !important;
 }
 select option { background: #0b1528; color: #c2d4e6; }
 ::placeholder { color: #385270 !important; }
 
-/* ─── Global card autostyling ───────────────────────────────────────── */
-/* Elevate all the existing rounded-xl border cards without touching JSX */
+/* ─── Card auto-elevation ───────────────────────────────────────────── */
 [class~="rounded-xl"][class~="border"],
 [class~="rounded-2xl"][class~="border"] {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255,255,255,0.035) inset;
+}
+
+/* ─── Gold button base ──────────────────────────────────────────────── */
+.btn-gold {
+  background: linear-gradient(135deg, #d4a017, #b88c10);
+  box-shadow: 0 0 20px rgba(212, 160, 23, 0.25);
+  color: #fff;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-gold:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 28px rgba(212, 160, 23, 0.35);
+}
+
+/* ─── Ownership bar ─────────────────────────────────────────────────── */
+.ownership-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(212, 160, 23, 0.08);
+  border: 1px solid rgba(212, 160, 23, 0.2);
+  border-radius: 20px;
+  padding: 2px 8px 2px 4px;
+  font-size: 11px;
+  color: #d4a017;
+  font-weight: 600;
 }

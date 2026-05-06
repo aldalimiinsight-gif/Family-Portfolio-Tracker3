@@ -1,24 +1,24 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Building2, Briefcase, Users,
-  Upload, FileText, BarChart3, X, Sparkles,
+  Upload, FileText, BarChart3, X, Gem,
 } from 'lucide-react';
 
 const NAV = [
-  { to: '/',           icon: LayoutDashboard, label: 'Dashboard',      color: 'text-indigo-400' },
-  { to: '/stocks',     icon: TrendingUp,      label: 'Stocks',         color: 'text-blue-400' },
-  { to: '/analysis',   icon: BarChart3,       label: 'Stock Analysis', color: 'text-cyan-400' },
-  { to: '/realestate', icon: Building2,       label: 'Real Estate',    color: 'text-violet-400' },
-  { to: '/business',   icon: Briefcase,       label: 'Business',       color: 'text-emerald-400' },
-  { to: '/family',     icon: Users,           label: 'Family Equity',  color: 'text-amber-400' },
-  { to: '/upload',     icon: Upload,          label: 'Upload Data',    color: 'text-slate-400' },
-  { to: '/reports',    icon: FileText,        label: 'Reports',        color: 'text-rose-400' },
+  { to: '/',           icon: LayoutDashboard, label: 'Dashboard',      color: '#d4a017' },
+  { to: '/stocks',     icon: TrendingUp,      label: 'Stocks',         color: '#60a5fa' },
+  { to: '/analysis',   icon: BarChart3,       label: 'Stock Analysis', color: '#22d3ee' },
+  { to: '/realestate', icon: Building2,       label: 'Real Estate',    color: '#a78bfa' },
+  { to: '/business',   icon: Briefcase,       label: 'Business',       color: '#34d399' },
+  { to: '/family',     icon: Users,           label: 'Family Equity',  color: '#d4a017' },
+  { to: '/upload',     icon: Upload,          label: 'Upload Data',    color: '#6488a8' },
+  { to: '/reports',    icon: FileText,        label: 'Reports',        color: '#fb7185' },
 ];
 
 const GROUPS = [
-  { label: 'Portfolio', items: NAV.slice(0, 1) },
-  { label: 'Assets',    items: NAV.slice(1, 5) },
-  { label: 'Management', items: NAV.slice(5) },
+  { label: 'Overview',    items: NAV.slice(0, 1) },
+  { label: 'Assets',      items: NAV.slice(1, 5) },
+  { label: 'Management',  items: NAV.slice(5) },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -32,27 +32,44 @@ export default function Sidebar({ open, onClose }) {
       )}
 
       <aside
-        style={{ background: 'linear-gradient(180deg, #04070f 0%, #060c1c 100%)' }}
+        style={{
+          background: 'linear-gradient(180deg, #040810 0%, #060c1c 60%, #040810 100%)',
+          borderRight: '1px solid rgba(212,160,23,0.08)',
+        }}
         className={[
           'fixed top-0 left-0 h-full z-40 w-64 flex flex-col',
-          'border-r border-white/[0.05]',
           'transition-transform duration-300',
           open ? 'translate-x-0' : '-translate-x-full',
           'lg:translate-x-0 lg:relative lg:z-auto',
         ].join(' ')}
       >
         {/* Logo */}
-        <div className="px-5 pt-6 pb-5 border-b border-white/[0.05] shrink-0">
+        <div
+          className="px-5 pt-6 pb-5 shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 20px rgba(99,102,241,0.4)' }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 glow-gold"
+                style={{
+                  background: 'linear-gradient(135deg, #d4a017, #9a7b1a)',
+                }}
               >
-                <Sparkles className="w-4 h-4 text-white" />
+                <Gem className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-tight">Family Office</p>
+                <p
+                  className="font-bold text-sm leading-tight"
+                  style={{
+                    background: 'linear-gradient(135deg, #f5d060, #d4a017)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Family Office
+                </p>
                 <p className="text-slate-500 text-xs leading-tight mt-0.5">Portfolio Tracker</p>
               </div>
             </div>
@@ -87,23 +104,27 @@ export default function Sidebar({ open, onClose }) {
                       <>
                         {isActive && (
                           <>
-                            {/* Active bg */}
                             <div
                               className="absolute inset-0 rounded-xl"
-                              style={{ background: 'linear-gradient(90deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))' }}
+                              style={{ background: 'linear-gradient(90deg, rgba(212,160,23,0.12), rgba(212,160,23,0.03))' }}
                             />
-                            {/* Left accent bar */}
                             <div
                               className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-                              style={{ background: 'linear-gradient(180deg, #818cf8, #6366f1)' }}
+                              style={{ background: 'linear-gradient(180deg, #f5d060, #d4a017)' }}
                             />
                           </>
                         )}
-                        <div className={`relative z-10 flex items-center gap-3 w-full`}>
-                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-400' : color + ' group-hover:' + color}`} />
+                        <div className="relative z-10 flex items-center gap-3 w-full">
+                          <Icon
+                            className="w-4 h-4 shrink-0 transition-colors"
+                            style={{ color: isActive ? '#d4a017' : color }}
+                          />
                           <span className="flex-1">{label}</span>
                           {isActive && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 opacity-80" />
+                            <div
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ background: '#d4a017', opacity: 0.8 }}
+                            />
                           )}
                         </div>
                       </>
@@ -116,15 +137,18 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-white/[0.05] shrink-0">
+        <div
+          className="px-4 py-4 shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+        >
           <div className="flex items-center gap-2.5 px-1">
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
             </div>
             <div>
               <p className="text-slate-400 text-xs">All data stored locally</p>
-              <p className="text-slate-600 text-xs">v1.2 · Private & Secure</p>
+              <p className="text-slate-600 text-xs">Private &amp; Secure</p>
             </div>
           </div>
         </div>

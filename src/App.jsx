@@ -39,13 +39,20 @@ function AppShell() {
         <Header onMenuClick={() => setSidebarOpen(true)} title={title} />
 
         {state.stocks.length === 0 && state.members.length === 0 && (
-          <div className="bg-blue-600/10 border-b border-blue-600/20 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0">
-            <p className="text-blue-300 text-sm">
-              <span className="font-semibold">Welcome!</span> Load sample data to explore, or start adding your own investments.
+          <div
+            className="px-4 py-2.5 flex items-center justify-between gap-4 shrink-0"
+            style={{
+              background: 'linear-gradient(90deg, rgba(212,160,23,0.08), rgba(212,160,23,0.03))',
+              borderBottom: '1px solid rgba(212,160,23,0.15)',
+            }}
+          >
+            <p className="text-sm" style={{ color: '#d4a017' }}>
+              <span className="font-semibold">Welcome!</span>{' '}
+              <span className="text-slate-400">Load sample data to explore, or start adding your own investments.</span>
             </p>
             <button
               onClick={() => dispatch({ type: 'LOAD_SAMPLE_DATA' })}
-              className="shrink-0 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-xs font-medium"
+              className="shrink-0 px-3 py-1.5 rounded-lg text-white text-xs font-semibold btn-gold"
             >
               Load Sample Data
             </button>

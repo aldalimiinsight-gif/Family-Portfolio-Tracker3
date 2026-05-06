@@ -6,24 +6,47 @@ import { calcStockMetrics, fmtCurrency, fmtPct, pnlBg, pnlColor } from '../utils
 import Modal from '../components/common/Modal';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
+import OwnershipEditor from '../components/common/OwnershipEditor';
 import toast from 'react-hot-toast';
 
 const EXCHANGES = ['US', 'QSE', 'Tadawul'];
 const CURRENCIES = ['USD', 'QAR', 'SAR', 'GBP', 'EUR'];
 
-function genId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
+function genId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
 const defaultForm = {
   ticker: '', exchange: 'US', name: '', purchaseDate: '',
   purchasePrice: '', quantity: '', currency: 'USD', alertThreshold: 30,
+  owners: [],
 };
+
+/* Small avatar row showing asset owners */
+function OwnerRow({ owners = [], members = [] }) {
+  if (!owners?.length) return <span className="text-slate-600 text-xs">—</span>;
+  return (
+    <div className="flex items-center gap-1">
+      {owners.map((o) => {
+        const m = members.find((mem) => mem.id === o.memberId);
+        if (!m) return null;
+        return (
+          <div
+            key={o.memberId}
+            title={`${m.name}: ${o.ownershipPct}%`}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+            style={{ background: m.color || '#d4a017', boxShadow: `0 0 6px ${m.color || '#d4a017'}44` }}
+          >
+            {m.avatar || m.name[0]}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Stocks() {
   const { state, dispatch } = usePortfolio();
   const { refreshTicker, refreshAll } = useStockPrices();
-  const { stocks, prices, settings } = state;
+  const { stocks, prices, settings, members } = state;
 
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -34,11 +57,7 @@ export default function Stocks() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const openAdd = () => { setEditing(null); setForm(defaultForm); setModal(true); };
-  const openEdit = (stock) => {
-    setEditing(stock.id);
-    setForm({ ...stock });
-    setModal(true);
-  };
+  const openEdit = (stock) => { setEditing(stock.id); setForm({ owners: [], ...stock }); setModal(true); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,13 +67,10 @@ export default function Stocks() {
       quantity: parseFloat(form.quantity),
       alertThreshold: parseFloat(form.alertThreshold) || alertThreshold,
     };
-
     if (!stock.ticker || !stock.purchasePrice || !stock.quantity) {
       toast.error('Please fill in all required fields');
       return;
     }
-
-    // Auto-append exchange suffix
     if (stock.exchange === 'QSE' && !stock.ticker.endsWith('.QA')) {
       stock.ticker = `${stock.ticker.toUpperCase()}.QA`;
     } else if (stock.exchange === 'Tadawul' && !stock.ticker.endsWith('.SR')) {
@@ -62,7 +78,14 @@ export default function Stocks() {
     } else {
       stock.ticker = stock.ticker.toUpperCase();
     }
-
+    /* Validate ownership totals */
+    if (stock.owners?.length) {
+      const total = stock.owners.reduce((s, o) => s + (parseFloat(o.ownershipPct) || 0), 0);
+      if (Math.abs(total - 100) > 0.1) {
+        toast.error('Ownership percentages must sum to 100%');
+        return;
+      }
+    }
     if (editing) {
       dispatch({ type: 'UPDATE_STOCK', payload: { ...stock, id: editing } });
       toast.success('Stock updated');
@@ -112,14 +135,14 @@ export default function Stocks() {
       {/* Summary bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Total Cost Basis', value: fmtCurrency(totals.costTotal, 'USD', true) },
-          { label: 'Current Value', value: fmtCurrency(totals.valueTotal, 'USD', true) },
-          { label: 'Unrealized P&L', value: fmtPct(totals.pnlPct), color: pnlColor(totals.pnlPct) },
-          { label: 'Positions', value: `${stocks.length}` },
+          { label: 'Total Cost Basis',  value: fmtCurrency(totals.costTotal,  'USD', true),  color: 'text-white' },
+          { label: 'Current Value',     value: fmtCurrency(totals.valueTotal, 'USD', true),  color: 'text-white' },
+          { label: 'Unrealized P&L',    value: fmtPct(totals.pnlPct),                        color: pnlColor(totals.pnlPct) },
+          { label: 'Positions',         value: `${stocks.length}`,                           color: 'text-white' },
         ].map((item) => (
           <div key={item.label} className="card p-4">
             <p className="section-label mb-1.5">{item.label}</p>
-            <p className={`font-bold text-xl num ${item.color || 'text-white'}`}>{item.value}</p>
+            <p className={`font-bold text-xl num ${item.color}`}>{item.value}</p>
           </div>
         ))}
       </div>
@@ -132,23 +155,25 @@ export default function Stocks() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search ticker or name…"
-            className="w-full pl-9 pr-4 py-2 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500/60 transition-colors"
-            style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-white text-sm"
           />
         </div>
         <select
           value={filterExchange}
           onChange={(e) => setFilterExchange(e.target.value)}
-          className="px-3 py-2 rounded-lg text-slate-300 text-sm focus:outline-none"
-          style={{ background: 'rgba(11,21,40,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
+          className="px-3 py-2 rounded-lg text-slate-300 text-sm"
         >
           <option value="All">All Exchanges</option>
           {EXCHANGES.map((ex) => <option key={ex}>{ex}</option>)}
         </select>
         <button
           onClick={() => setSettingsOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-amber-400 text-sm hover:bg-amber-500/10 transition-colors"
-          style={{ border: '1px solid rgba(245,158,11,0.2)' }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
+          style={{
+            color: '#d4a017',
+            background: 'rgba(212,160,23,0.08)',
+            border: '1px solid rgba(212,160,23,0.2)',
+          }}
         >
           <SlidersHorizontal className="w-4 h-4" />
           Alert: {settings.alertThreshold}%
@@ -163,8 +188,7 @@ export default function Stocks() {
         </button>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 20px rgba(59,130,246,0.25)' }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold btn-gold"
         >
           <Plus className="w-4 h-4" />
           Add Stock
@@ -178,7 +202,7 @@ export default function Stocks() {
           title="No stocks yet"
           description="Add your first stock position to start tracking your portfolio performance."
           action={
-            <button onClick={openAdd} className="px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+            <button onClick={openAdd} className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 btn-gold">
               <Plus className="w-4 h-4" /> Add Stock
             </button>
           }
@@ -198,11 +222,12 @@ export default function Stocks() {
                   <th className="text-right px-4 py-3 section-label">Mkt Value</th>
                   <th className="text-right px-4 py-3 section-label">P&L</th>
                   <th className="text-right px-4 py-3 section-label">P&L %</th>
-                  <th className="text-right px-4 py-3 section-label">Day</th>
+                  <th className="text-right px-4 py-3 section-label hidden xl:table-cell">Day</th>
+                  <th className="text-left px-4 py-3 section-label hidden lg:table-cell">Owners</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+              <tbody>
                 {filtered.map((stock) => {
                   const live = prices?.[stock.ticker];
                   const loading = state.pricesLoading?.[stock.ticker];
@@ -213,9 +238,7 @@ export default function Stocks() {
                     <tr key={stock.id} className="tr-hover" style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          {isAlert && (
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 pulse-alert shrink-0" />
-                          )}
+                          {isAlert && <AlertTriangle className="w-3.5 h-3.5 pulse-alert shrink-0" style={{ color: '#d4a017' }} />}
                           <div>
                             <p className="text-white font-semibold text-sm">{stock.name || stock.ticker}</p>
                             <p className="text-slate-500 text-xs">{stock.ticker}</p>
@@ -233,22 +256,15 @@ export default function Stocks() {
                         {stock.currency !== 'USD' ? stock.currency + ' ' : '$'}{stock.purchasePrice.toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-right text-sm num">
-                        {loading ? (
-                          <span className="text-slate-500 text-xs">Loading…</span>
-                        ) : live?.price ? (
-                          <span className="text-white font-medium">
-                            {stock.currency !== 'USD' ? stock.currency + ' ' : '$'}{live.price.toFixed(2)}
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 text-xs">—</span>
-                        )}
+                        {loading
+                          ? <span className="text-slate-500 text-xs">Loading…</span>
+                          : live?.price
+                            ? <span className="text-white font-medium">{stock.currency !== 'USD' ? stock.currency + ' ' : '$'}{live.price.toFixed(2)}</span>
+                            : <span className="text-slate-500 text-xs">—</span>
+                        }
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-400 text-sm num">
-                        {fmtCurrency(m.costBasisUSD, 'USD', true)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-white text-sm font-medium num">
-                        {fmtCurrency(m.currentValueUSD, 'USD', true)}
-                      </td>
+                      <td className="px-4 py-3 text-right text-slate-400 text-sm num">{fmtCurrency(m.costBasisUSD,   'USD', true)}</td>
+                      <td className="px-4 py-3 text-right text-white text-sm font-medium num">{fmtCurrency(m.currentValueUSD, 'USD', true)}</td>
                       <td className="px-4 py-3 text-right text-sm num">
                         <span className={pnlColor(m.unrealizedPnL)}>
                           {m.unrealizedPnL >= 0 ? '+' : ''}{fmtCurrency(m.unrealizedPnL, 'USD', true)}
@@ -259,30 +275,23 @@ export default function Stocks() {
                           {fmtPct(m.unrealizedPnLPct)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-sm num">
+                      <td className="px-4 py-3 text-right text-sm num hidden xl:table-cell">
                         <span className={pnlColor(m.dayChangePct)}>
                           {m.dayChangePct !== 0 ? fmtPct(m.dayChangePct) : '—'}
                         </span>
                       </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <OwnerRow owners={stock.owners} members={members} />
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => refreshTicker(stock.ticker)}
-                            className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700"
-                            title="Refresh price"
-                          >
+                          <button onClick={() => refreshTicker(stock.ticker)} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700" title="Refresh price">
                             <RefreshCw className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => openEdit(stock)}
-                            className="p-1.5 rounded text-slate-500 hover:text-blue-400 hover:bg-slate-700"
-                          >
+                          <button onClick={() => openEdit(stock)} className="p-1.5 rounded text-slate-500 hover:text-blue-400 hover:bg-slate-700">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(stock.id)}
-                            className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-slate-700"
-                          >
+                          <button onClick={() => handleDelete(stock.id)} className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-slate-700">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -297,7 +306,7 @@ export default function Stocks() {
       )}
 
       {/* Add/Edit Modal */}
-      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Stock Position' : 'Add Stock Position'}>
+      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Stock Position' : 'Add Stock Position'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -305,8 +314,8 @@ export default function Stocks() {
               <input
                 value={form.ticker}
                 onChange={(e) => setForm({ ...form, ticker: e.target.value.toUpperCase() })}
-                placeholder="e.g. AAPL, QNBK, 2222"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                placeholder="e.g. AAPL, QNBK"
+                className="w-full px-3 py-2 rounded-lg text-white text-sm"
                 required
               />
             </div>
@@ -318,7 +327,7 @@ export default function Stocks() {
                   const ex = e.target.value;
                   setForm({ ...form, exchange: ex, currency: ex === 'QSE' ? 'QAR' : ex === 'Tadawul' ? 'SAR' : 'USD' });
                 }}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg text-white text-sm"
               >
                 {EXCHANGES.map((ex) => <option key={ex}>{ex}</option>)}
               </select>
@@ -331,28 +340,18 @@ export default function Stocks() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. Apple Inc."
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 rounded-lg text-white text-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Purchase Date *</label>
-              <input
-                type="date"
-                value={form.purchaseDate}
-                onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-                required
-              />
+              <input type="date" value={form.purchaseDate} onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-white text-sm" required />
             </div>
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Currency</label>
-              <select
-                value={form.currency}
-                onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-              >
+              <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full px-3 py-2 rounded-lg text-white text-sm">
                 {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </div>
@@ -361,56 +360,40 @@ export default function Stocks() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Purchase Price ({form.currency}) *</label>
-              <input
-                type="number"
-                step="0.0001"
-                min="0"
-                value={form.purchasePrice}
-                onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })}
-                placeholder="0.00"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                required
-              />
+              <input type="number" step="0.0001" min="0" value={form.purchasePrice} onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })} placeholder="0.00" className="w-full px-3 py-2 rounded-lg text-white text-sm" required />
             </div>
             <div>
-              <label className="block text-slate-400 text-xs mb-1.5">Quantity (Shares) *</label>
-              <input
-                type="number"
-                step="0.001"
-                min="0"
-                value={form.quantity}
-                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                placeholder="0"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                required
-              />
+              <label className="block text-slate-400 text-xs mb-1.5">Quantity *</label>
+              <input type="number" step="0.001" min="0" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} placeholder="0" className="w-full px-3 py-2 rounded-lg text-white text-sm" required />
             </div>
           </div>
 
           <div>
             <label className="block text-slate-400 text-xs mb-1.5">
-              Profit Alert Threshold: <span className="text-amber-400 font-bold">{form.alertThreshold}%</span>
+              Profit Alert: <span className="font-bold" style={{ color: '#d4a017' }}>{form.alertThreshold}%</span>
             </label>
-            <input
-              type="range"
-              min="5"
-              max="200"
-              step="5"
-              value={form.alertThreshold}
-              onChange={(e) => setForm({ ...form, alertThreshold: parseInt(e.target.value) })}
-              className="w-full accent-amber-500"
-            />
-            <div className="flex justify-between text-slate-600 text-xs mt-1">
-              <span>5%</span><span>200%</span>
+            <input type="range" min="5" max="200" step="5" value={form.alertThreshold} onChange={(e) => setForm({ ...form, alertThreshold: parseInt(e.target.value) })} className="w-full" style={{ accentColor: '#d4a017' }} />
+          </div>
+
+          {/* Ownership */}
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{ background: 'rgba(212,160,23,0.04)', border: '1px solid rgba(212,160,23,0.12)' }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#d4a017' }} />
+              <p className="text-white text-sm font-medium">Family Ownership</p>
+              <span className="text-slate-500 text-xs">(optional)</span>
             </div>
+            <OwnershipEditor owners={form.owners || []} onChange={(owners) => setForm({ ...form, owners })} />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setModal(false)} className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 text-sm">
+            <button type="button" onClick={() => setModal(false)} className="flex-1 px-4 py-2 rounded-lg text-slate-300 text-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
               Cancel
             </button>
-            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm font-medium">
-              {editing ? 'Update' : 'Add Stock'}
+            <button type="submit" className="flex-1 px-4 py-2 rounded-lg text-white text-sm font-semibold btn-gold">
+              {editing ? 'Update Stock' : 'Add Stock'}
             </button>
           </div>
         </form>
@@ -419,38 +402,21 @@ export default function Stocks() {
       {/* Alert Settings Modal */}
       <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Alert Engine Settings" size="sm">
         <div className="space-y-5">
-          <p className="text-slate-400 text-sm">
-            Set the global profit threshold. Stocks exceeding this gain will be flagged with a visual alert.
-          </p>
+          <p className="text-slate-400 text-sm">Set the profit threshold at which stocks trigger visual alerts.</p>
           <div>
             <label className="block text-white text-sm font-medium mb-2">
-              Alert at: <span className="text-amber-400 font-bold">{alertThreshold}%</span> profit
+              Alert at: <span className="font-bold" style={{ color: '#d4a017' }}>{alertThreshold}%</span> gain
             </label>
-            <input
-              type="range"
-              min="5"
-              max="200"
-              step="5"
-              value={alertThreshold}
-              onChange={(e) => setAlertThreshold(parseInt(e.target.value))}
-              className="w-full accent-amber-500"
-            />
-            <div className="flex justify-between text-slate-600 text-xs mt-1">
-              <span>5%</span><span>100%</span><span>200%</span>
-            </div>
+            <input type="range" min="5" max="200" step="5" value={alertThreshold} onChange={(e) => setAlertThreshold(parseInt(e.target.value))} className="w-full" style={{ accentColor: '#d4a017' }} />
           </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-            <p className="text-amber-400 text-xs">
-              Any stock with an unrealized gain ≥ {alertThreshold}% will trigger an alert indicator and appear in the notification bell.
+          <div className="rounded-lg p-3" style={{ background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.2)' }}>
+            <p className="text-xs" style={{ color: '#d4a017' }}>
+              Stocks with unrealized gains ≥ {alertThreshold}% will be flagged with an alert indicator.
             </p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setSettingsOpen(false)} className="flex-1 px-4 py-2 bg-slate-700 rounded-lg text-slate-300 text-sm">
-              Cancel
-            </button>
-            <button onClick={saveAlertThreshold} className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-white text-sm font-medium">
-              Save Threshold
-            </button>
+            <button onClick={() => setSettingsOpen(false)} className="flex-1 px-4 py-2 rounded-lg text-slate-300 text-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Cancel</button>
+            <button onClick={saveAlertThreshold} className="flex-1 px-4 py-2 rounded-lg text-white text-sm font-semibold btn-gold">Save</button>
           </div>
         </div>
       </Modal>

@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, MapPin, Calendar } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { fmtCurrency, fmtPct } from '../utils/calculations';
 import Modal from '../components/common/Modal';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
+import OwnershipEditor from '../components/common/OwnershipEditor';
 import AllocationChart from '../components/charts/AllocationChart';
 import toast from 'react-hot-toast';
 
@@ -15,30 +16,69 @@ function genId() { return Math.random().toString(36).slice(2) + Date.now().toStr
 
 const defaultForm = {
   propertyName: '', platform: 'Stake', investmentAmount: '', annualizedROI: '',
-  currency: 'USD', purchaseDate: '', location: '', notes: '',
+  currency: 'USD', purchaseDate: '', location: '', notes: '', owners: [],
 };
+
+/* Owner avatars */
+function OwnerAvatars({ owners = [], members = [] }) {
+  if (!owners?.length) return null;
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {owners.map((o) => {
+        const m = members.find((mem) => mem.id === o.memberId);
+        if (!m) return null;
+        return (
+          <span
+            key={o.memberId}
+            className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{
+              background: `${m.color || '#d4a017'}15`,
+              color: m.color || '#d4a017',
+              border: `1px solid ${m.color || '#d4a017'}30`,
+            }}
+          >
+            <span
+              className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
+              style={{ background: m.color || '#d4a017' }}
+            >
+              {m.avatar || m.name[0]}
+            </span>
+            {m.name} {o.ownershipPct}%
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function RealEstate() {
   const { state, dispatch } = usePortfolio();
-  const { realEstate } = state;
+  const { realEstate, members } = state;
 
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultForm);
 
   const openAdd = () => { setEditing(null); setForm(defaultForm); setModal(true); };
-  const openEdit = (p) => { setEditing(p.id); setForm({ ...p }); setModal(true); };
+  const openEdit = (p) => { setEditing(p.id); setForm({ owners: [], ...p }); setModal(true); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const property = {
       ...form,
       investmentAmount: parseFloat(form.investmentAmount),
-      annualizedROI: parseFloat(form.annualizedROI),
+      annualizedROI: parseFloat(form.annualizedROI) || 0,
     };
     if (!property.propertyName || !property.investmentAmount) {
       toast.error('Property name and investment amount are required');
       return;
+    }
+    if (property.owners?.length) {
+      const total = property.owners.reduce((s, o) => s + (parseFloat(o.ownershipPct) || 0), 0);
+      if (Math.abs(total - 100) > 0.1) {
+        toast.error('Ownership percentages must sum to 100%');
+        return;
+      }
     }
     if (editing) {
       dispatch({ type: 'UPDATE_REAL_ESTATE', payload: { ...property, id: editing } });
@@ -58,16 +98,18 @@ export default function RealEstate() {
   };
 
   const totals = useMemo(() => {
-    const invested = realEstate.reduce((s, p) => s + (p.investmentAmount || 0), 0);
+    const invested    = realEstate.reduce((s, p) => s + (p.investmentAmount || 0), 0);
     const annualIncome = realEstate.reduce((s, p) => s + (p.investmentAmount || 0) * (p.annualizedROI || 0) / 100, 0);
-    const avgROI = realEstate.length > 0
-      ? realEstate.reduce((s, p) => s + (p.annualizedROI || 0), 0) / realEstate.length
-      : 0;
+    const avgROI      = realEstate.length > 0 ? realEstate.reduce((s, p) => s + (p.annualizedROI || 0), 0) / realEstate.length : 0;
     return { invested, annualIncome, avgROI };
   }, [realEstate]);
 
   const chartData = useMemo(() =>
-    realEstate.map((p) => ({ name: p.propertyName, value: p.investmentAmount || 0, pct: totals.invested > 0 ? ((p.investmentAmount || 0) / totals.invested) * 100 : 0 })),
+    realEstate.map((p) => ({
+      name: p.propertyName,
+      value: p.investmentAmount || 0,
+      pct: totals.invested > 0 ? ((p.investmentAmount || 0) / totals.invested) * 100 : 0,
+    })),
     [realEstate, totals.invested]
   );
 
@@ -76,10 +118,10 @@ export default function RealEstate() {
       {/* KPI */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Invested', value: fmtCurrency(totals.invested, 'USD', true), color: 'text-white' },
-          { label: 'Properties', value: `${realEstate.length}`, color: 'text-white' },
-          { label: 'Annual Income', value: fmtCurrency(totals.annualIncome, 'USD', true), color: 'text-emerald-400' },
-          { label: 'Avg. ROI', value: fmtPct(totals.avgROI, 1), color: 'text-blue-400' },
+          { label: 'Total Invested',  value: fmtCurrency(totals.invested, 'USD', true),    color: 'text-white' },
+          { label: 'Properties',      value: `${realEstate.length}`,                       color: 'text-white' },
+          { label: 'Annual Income',   value: fmtCurrency(totals.annualIncome, 'USD', true), color: 'text-emerald-400' },
+          { label: 'Avg. ROI',        value: fmtPct(totals.avgROI, 1),                     color: 'text-blue-400' },
         ].map((item) => (
           <div key={item.label} className="card p-4">
             <p className="section-label mb-1.5">{item.label}</p>
@@ -97,14 +139,13 @@ export default function RealEstate() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Table / cards */}
         <div className={realEstate.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white font-semibold">Properties</h2>
             <button
               onClick={openAdd}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', boxShadow: '0 0 20px rgba(139,92,246,0.25)' }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold btn-gold"
             >
               <Plus className="w-4 h-4" />
               Add Property
@@ -117,27 +158,42 @@ export default function RealEstate() {
               title="No properties yet"
               description="Add your Stake or other real estate investments to track performance."
               action={
-                <button onClick={openAdd} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-white text-sm font-medium flex items-center gap-2">
+                <button onClick={openAdd} className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 btn-gold">
                   <Plus className="w-4 h-4" /> Add Property
                 </button>
               }
             />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {realEstate.map((p) => {
-                const annual = (p.investmentAmount || 0) * (p.annualizedROI || 0) / 100;
+                const annual  = (p.investmentAmount || 0) * (p.annualizedROI || 0) / 100;
                 const monthly = annual / 12;
-                const alloc = totals.invested > 0 ? ((p.investmentAmount || 0) / totals.invested) * 100 : 0;
+                const alloc   = totals.invested > 0 ? ((p.investmentAmount || 0) / totals.invested) * 100 : 0;
                 return (
                   <div key={p.id} className="card p-5">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h3 className="text-white font-semibold text-sm">{p.propertyName}</h3>
                           <Badge label={p.platform} color="purple" />
                         </div>
-                        {p.location && <p className="text-slate-500 text-xs">{p.location}</p>}
-                        {p.purchaseDate && <p className="text-slate-600 text-xs">Since {p.purchaseDate}</p>}
+                        <div className="flex items-center gap-3 text-slate-500 text-xs flex-wrap">
+                          {p.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />{p.location}
+                            </span>
+                          )}
+                          {p.purchaseDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />Since {p.purchaseDate}
+                            </span>
+                          )}
+                        </div>
+                        {p.owners?.length > 0 && (
+                          <div className="mt-2">
+                            <OwnerAvatars owners={p.owners} members={members} />
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button onClick={() => openEdit(p)} className="p-1.5 rounded text-slate-500 hover:text-blue-400 hover:bg-slate-700">
@@ -167,7 +223,7 @@ export default function RealEstate() {
                         <p className="text-slate-500 text-xs">Portfolio Share</p>
                         <p className="text-slate-300 font-semibold text-sm num">{fmtPct(alloc, 1)}</p>
                         <div className="h-1.5 rounded-full mt-1" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(alloc, 100)}%`, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)' }} />
+                          <div className="h-full rounded-full" style={{ width: `${Math.min(alloc, 100)}%`, background: 'linear-gradient(90deg, #a78bfa, #7c3aed)' }} />
                         </div>
                       </div>
                     </div>
@@ -181,107 +237,64 @@ export default function RealEstate() {
       </div>
 
       {/* Add/Edit Modal */}
-      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Property' : 'Add Property'}>
+      <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Property' : 'Add Property'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-slate-400 text-xs mb-1.5">Property Name *</label>
-            <input
-              value={form.propertyName}
-              onChange={(e) => setForm({ ...form, propertyName: e.target.value })}
-              placeholder="e.g. Marina Heights Tower, Dubai"
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              required
-            />
+            <input value={form.propertyName} onChange={(e) => setForm({ ...form, propertyName: e.target.value })} placeholder="e.g. Marina Heights Tower, Dubai" className="w-full px-3 py-2 rounded-lg text-white text-sm" required />
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Platform</label>
-              <select
-                value={form.platform}
-                onChange={(e) => setForm({ ...form, platform: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-              >
+              <select value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className="w-full px-3 py-2 rounded-lg text-white text-sm">
                 {PLATFORMS.map((p) => <option key={p}>{p}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Currency</label>
-              <select
-                value={form.currency}
-                onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-              >
+              <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full px-3 py-2 rounded-lg text-white text-sm">
                 {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Investment Amount ({form.currency}) *</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.investmentAmount}
-                onChange={(e) => setForm({ ...form, investmentAmount: e.target.value })}
-                placeholder="10000"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                required
-              />
+              <input type="number" min="0" step="0.01" value={form.investmentAmount} onChange={(e) => setForm({ ...form, investmentAmount: e.target.value })} placeholder="10000" className="w-full px-3 py-2 rounded-lg text-white text-sm" required />
             </div>
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Annualized ROI (%)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.annualizedROI}
-                onChange={(e) => setForm({ ...form, annualizedROI: e.target.value })}
-                placeholder="8.5"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              />
+              <input type="number" min="0" step="0.01" value={form.annualizedROI} onChange={(e) => setForm({ ...form, annualizedROI: e.target.value })} placeholder="8.5" className="w-full px-3 py-2 rounded-lg text-white text-sm" />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Purchase Date</label>
-              <input
-                type="date"
-                value={form.purchaseDate}
-                onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-              />
+              <input type="date" value={form.purchaseDate} onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-white text-sm" />
             </div>
             <div>
               <label className="block text-slate-400 text-xs mb-1.5">Location</label>
-              <input
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                placeholder="Dubai Marina, UAE"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              />
+              <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Dubai Marina, UAE" className="w-full px-3 py-2 rounded-lg text-white text-sm" />
             </div>
           </div>
-
           <div>
             <label className="block text-slate-400 text-xs mb-1.5">Notes</label>
-            <textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={2}
-              placeholder="Any additional notes…"
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
-            />
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="Any additional notes…" className="w-full px-3 py-2 rounded-lg text-white text-sm resize-none" />
+          </div>
+
+          {/* Ownership */}
+          <div className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(212,160,23,0.04)', border: '1px solid rgba(212,160,23,0.12)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#d4a017' }} />
+              <p className="text-white text-sm font-medium">Family Ownership</p>
+              <span className="text-slate-500 text-xs">(optional)</span>
+            </div>
+            <OwnershipEditor owners={form.owners || []} onChange={(owners) => setForm({ ...form, owners })} />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setModal(false)} className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 text-sm">
-              Cancel
-            </button>
-            <button type="submit" className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-white text-sm font-medium">
+            <button type="button" onClick={() => setModal(false)} className="flex-1 px-4 py-2 rounded-lg text-slate-300 text-sm" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Cancel</button>
+            <button type="submit" className="flex-1 px-4 py-2 rounded-lg text-white text-sm font-semibold btn-gold">
               {editing ? 'Update' : 'Add Property'}
             </button>
           </div>
